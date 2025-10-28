@@ -25,7 +25,11 @@ createInertiaApp({
         );
     },
     progress: {
-        color: '#4B5563',
+        // Configuración mejorada
+        delay: 0, // Muy rápido en aparecer
+        color: '#ef4444', // Color verde esmeralda
+        includeCSS: true,
+        showSpinner: true,
     },
 });
 
