@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AulaController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -12,6 +14,8 @@ Route::get('/', function () {
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
+
+
 
 Route::get('/NoAutorizado', function () {
     return Inertia::render('usuarios/NoAutorizado'); // ← Con carpeta usuarios/
@@ -43,6 +47,16 @@ Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
     Route::get('permisos/edit/{permission}', [PermisoController::class, 'edit'])->name('permisos.Editar')->middleware('permission:edit permisos');
     Route::put('permisos/{permission}', [PermisoController::class, 'update'])->name('permisos.Update')->middleware('permission:edit permisos');
     Route::delete('permisos/{permission}', [PermisoController::class, 'destroy'])->name('permisos.Destroy')->middleware('permission:delete permisos');     
+
+    //rutas de aula
+    Route::get('aula', [AulaController::class, 'index'])->name('aula.Index')->middleware('permission:view aulas|edit aulas|create aulas');
+    Route::get('aula/create', [AulaController::class, 'create'])->name('aula.Create')->middleware('permission:create aulas');
+    Route::post('aula', [AulaController::class, 'store'])->name('aula.Store')->middleware('permission:create aulas');
+    Route::get('aula/{classroom}', [AulaController::class, 'show'])->name('aula.Show')->middleware('permission:view aulas|edit aulas|show aulas');
+    Route::get('aula/edit/{classroom}', [AulaController::class, 'edit'])->name('aula.Edit')->middleware('permission:edit aulas');
+    Route::put('aula/{classroom}', [AulaController::class, 'update'])->name('aula.Update')->middleware('permission:edit aulas');
+    Route::delete('aula/{classroom}', [AulaController::class, 'destroy'])->name('aula.Destroy');
+
 });
 
 require __DIR__.'/settings.php';

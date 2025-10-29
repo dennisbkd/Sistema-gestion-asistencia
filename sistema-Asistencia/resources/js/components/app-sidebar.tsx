@@ -13,11 +13,12 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users } from 'lucide-react';
+import { BookKey, BookOpen, Folder, LayoutGrid, Users } from 'lucide-react';
 import AppLogo from './app-logo';
-import usuarios, { Index } from '@/routes/usuarios';
+import { Index } from '@/routes/usuarios';
 import rol from '@/routes/rol';
 import permisos from '@/routes/permisos';
+import aula from '@/routes/aula';
 
 const mainNavItems: NavItem[] = [
     {
@@ -34,6 +35,16 @@ const mainNavItems: NavItem[] = [
             { title: "Bitácora", href: "/bitacora" },
             { title: "Roles", href: rol.Index().url },
             { title: "Permisos", href: permisos.Index().url },
+        ],
+    },
+    {
+        title: 'Gestion Academica',
+        href: aula.Index().url,
+        icon: BookKey,
+        children: [
+            { title: "Aulas", href: aula.Index().url },
+            { title: "Cursos", href: "#" },
+            { title: "Asignaturas", href: "#" },
         ],
     }
 ];
