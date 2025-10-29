@@ -15,7 +15,9 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Users } from 'lucide-react';
 import AppLogo from './app-logo';
-import usuarios from '@/routes/usuarios';
+import usuarios, { Index } from '@/routes/usuarios';
+import rol from '@/routes/rol';
+import permisos from '@/routes/permisos';
 
 const mainNavItems: NavItem[] = [
     {
@@ -24,9 +26,15 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Usuarios',
-        href: usuarios.Index().url,
-        icon: Users
+        title: 'Gestión de Usuarios',
+        href: Index().url,
+        icon: Users,
+        children: [
+            { title: "Usuarios", href: "/usuarios" },
+            { title: "Bitácora", href: "/bitacora" },
+            { title: "Roles", href: rol.Index().url },
+            { title: "Permisos", href: permisos.Index().url },
+        ],
     }
 ];
 
