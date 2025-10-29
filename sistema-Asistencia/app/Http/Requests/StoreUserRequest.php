@@ -35,6 +35,8 @@ class StoreUserRequest extends FormRequest
             ],
             'password' => ['required', 'string', Password::min(8), 'confirmed'],
             'estado' => 'sometimes|in:activo,inactivo,suspendido',
+            'roles' => 'required|array', // ← Agregar esta línea
+            'roles.*' => 'exists:roles,id', // ← Y esta línea
         ];
     }
 }
