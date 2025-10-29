@@ -5,36 +5,98 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { email } from '@/routes/password';
 import { Index, Create as crear, store } from '@/routes/usuarios';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeftSquare, CheckCircle2, KeyRound, Mail, User, UserPlus } from 'lucide-react';
+import { ArrowLeftSquare, CheckCircle2, KeyRound, Mail, User, UserPlus, Shield } from 'lucide-react';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
+    title: 'Dashboard',
+    href: '/dashboard',
+  },
+  {
+    title: 'Usuarios',
+    href: Index().url,
+  },
+  {
     title: 'Crear Usuario',
     href: crear().url,
-  },
+  }
 ];
 
+interface Role {
+  id: number;
+  name: string;
+  guard_name: string;
+}
 
+interface CreateProps {
+  allRoles: Role[]; // Todos los roles disponibles
+}
 
-export default function Create() {
+export default function Create({ allRoles }: CreateProps) {
   const { data, setData, post, processing, errors } = useForm({
     name: '',
     email: '',
     password: '',
     password_confirmation: '',
-    estado: 'activo'
+    estado: 'activo',
+    roles: [] as number[], // Array de IDs de roles
   })
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(data);
-    post(store().url)
+    const createPromise = new Promise((resolve, reject) => {
+      post(store().url, {
+        onSuccess: () => {
+          resolve('success');
+        },
+        onError: (errors) => {
+          const errorMessages = Object.values(errors).join(', ');
+          reject(new Error(errorMessages || 'Error al crear el Usuario'));
+        },
+      });
+    });
+
+    toast.promise(createPromise, {
+      loading: 'Creando usuario...',
+      success: () => {
+        return `Usuario "${data.name}" creado exitosamente`;
+      },
+      error: (error) => {
+        return `${error.message}`;
+      },
+    });
   }
 
+  const handleRoleToggle = (roleId: number) => {
+    const newRoles = data.roles.includes(roleId)
+      ? data.roles.filter(id => id !== roleId)
+      : [...data.roles, roleId];
+
+    setData('roles', newRoles);
+  }
+
+  const getRoleBadge = (role: Role) => {
+    const roleColors: Record<string, string> = {
+      'administrador': 'bg-red-100 text-red-800 border-red-200',
+      'editor': 'bg-blue-100 text-blue-800 border-blue-200',
+      'supervisor': 'bg-green-100 text-green-800 border-green-200',
+      'usuario': 'bg-gray-100 text-gray-800 border-gray-200',
+    };
+
+    const baseClasses = "text-xs font-medium px-2.5 py-0.5 rounded border";
+    const colorClasses = roleColors[role.name] || 'bg-purple-100 text-purple-800 border-purple-200';
+
+    return (
+      <span className={`${baseClasses} ${colorClasses}`}>
+        {role.name}
+      </span>
+    );
+  };
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -91,6 +153,7 @@ export default function Create() {
                       <p className="text-sm text-destructive">{errors.name}</p>
                     )}
                   </div>
+
                   {/* Correo Electrónico */}
                   <div className="space-y-2">
                     <Label htmlFor="correo" className="flex items-center gap-2">
@@ -175,9 +238,53 @@ export default function Create() {
                     </Select>
                   </div>
 
+                  {/* Roles */}
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Roles Asignados
+                    </Label>
+                    <div className="space-y-2">
+                      {allRoles?.map((role) => (
+                        <div key={role.id} className="flex items-center space-x-3">
+                          <input
+                            type="checkbox"
+                            id={`role-${role.id}`}
+                            checked={data.roles.includes(role.id)}
+                            onChange={() => handleRoleToggle(role.id)}
+                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <Label
+                            htmlFor={`role-${role.id}`}
+                            className="flex items-center gap-2 cursor-pointer flex-1"
+                          >
+                            {getRoleBadge(role)}
+                            <span className="text-xs text-muted-foreground">
+                              ({role.guard_name})
+                            </span>
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    {data.roles.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Selecciona al menos un rol para el usuario
+                      </p>
+                    )}
+                    <div className="p-2 bg-muted rounded">
+                      <p className="text-sm text-muted-foreground">
+                        <strong>{data.roles.length}</strong> rol(es) seleccionado(s)
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Botones de Acción */}
                   <div className="flex gap-3 pt-4">
-                    <Button type="submit" disabled={processing} className="gap-2">
+                    <Button
+                      type="submit"
+                      disabled={processing || data.roles.length === 0}
+                      className="gap-2"
+                    >
                       <UserPlus className="h-4 w-4" />
                       {processing ? 'Creando...' : 'Crear Usuario'}
                     </Button>
@@ -194,6 +301,25 @@ export default function Create() {
 
           {/* Panel Lateral - Información y Guías */}
           <div className="space-y-6">
+            {/* Resumen de Roles */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Roles Disponibles</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {allRoles.map((role) => (
+                  <div key={role.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {getRoleBadge(role)}
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {role.guard_name}
+                    </Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
             {/* Tarjeta de Información */}
             <Card>
               <CardHeader>
@@ -226,52 +352,14 @@ export default function Create() {
 
                 <div className="flex items-start gap-3">
                   <div className="p-1 bg-amber-100 rounded-full mt-0.5">
-                    <User className="h-3 w-3 text-amber-600" />
+                    <Shield className="h-3 w-3 text-amber-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Estado del Usuario</p>
+                    <p className="text-sm font-medium">Roles Obligatorios</p>
                     <p className="text-xs text-muted-foreground">
-                      Los usuarios inactivos no pueden acceder al sistema
+                      Cada usuario debe tener al menos un rol asignado
                     </p>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Tarjeta de Estados */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Estados Disponibles</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">Activo</span>
-                  </div>
-                  <Badge variant="outline" className="bg-green-50 text-green-700">
-                    Acceso completo
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                    <span className="text-sm">Inactivo</span>
-                  </div>
-                  <Badge variant="outline" className="bg-gray-50 text-gray-700">
-                    Sin acceso
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span className="text-sm">Suspendido</span>
-                  </div>
-                  <Badge variant="outline" className="bg-red-50 text-red-700">
-                    Acceso bloqueado
-                  </Badge>
                 </div>
               </CardContent>
             </Card>
