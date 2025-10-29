@@ -6,48 +6,117 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { email } from '@/routes/password';
-import { Index, store } from '@/routes/usuarios';
+import { Index } from '@/routes/usuarios';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeftSquare, CheckCircle2, KeyRound, Mail, User, UserPlus } from 'lucide-react';
+import { ArrowLeftSquare, CheckCircle2, KeyRound, Mail, User, UserPlus, Shield } from 'lucide-react';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
+    title: 'Dashboard',
+    href: '/dashboard',
+  },
+  {
+    title: 'Usuarios',
+    href: UserController.Index().url,
+  },
+  {
     title: 'Editar Usuario',
     href: UserController.Edit(1).url,
-  },
+  }
 ];
+
+interface Role {
+  id: number;
+  name: string;
+  guard_name: string;
+}
+
 interface UsuarioEditProps {
   id: number;
   name: string;
   email: string;
   estado: string;
+  roles: number[]; // IDs de roles
 }
 
+interface EditProps {
+  usuario: UsuarioEditProps;
+  allRoles: Role[]; // Todos los roles disponibles
+}
 
-export default function Editar({ usuario }: { usuario: UsuarioEditProps }) {
-  console.log(usuario);
+export default function Editar({ usuario, allRoles }: EditProps) {
   const { data, setData, put, processing, errors } = useForm({
     name: usuario.name,
     email: usuario.email,
     password: '',
     password_confirmation: '',
-    estado: usuario.estado
+    estado: usuario.estado,
+    roles: usuario.roles || [],
   })
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(data);
-    put(UserController.update(usuario.id).url);
+    const updatePromise = new Promise((resolve, reject) => {
+      try {
+        put(UserController.update(usuario.id).url, {
+          onSuccess: () => {
+            resolve('success');
+          },
+          onError: (errors) => {
+            // Construir mensaje de error detallado
+            const errorMessages = Object.values(errors).join(', ');
+            reject(new Error(errorMessages || 'Error al actualizar el rol'));
+          },
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+
+    toast.promise(updatePromise, {
+      loading: 'Guardando cambios del rol...',
+      success: () => {
+        return `Rol "${data.name}" actualizado correctamente`;
+      },
+      error: (error) => {
+        return `${error.message}`;
+      },
+    });
   }
 
+  const handleRoleToggle = (roleId: number) => {
+    const newRoles = data.roles.includes(roleId)
+      ? data.roles.filter(id => id !== roleId)
+      : [...data.roles, roleId];
+
+    setData('roles', newRoles);
+  }
+
+  const getRoleBadge = (role: Role) => {
+    const roleColors: Record<string, string> = {
+      'administrador': 'bg-red-100 text-red-800 border-red-200',
+      'editor': 'bg-blue-100 text-blue-800 border-blue-200',
+      'supervisor': 'bg-green-100 text-green-800 border-green-200',
+      'usuario': 'bg-gray-100 text-gray-800 border-gray-200',
+    };
+
+    const baseClasses = "text-xs font-medium px-2.5 py-0.5 rounded border";
+    const colorClasses = roleColors[role.name] || 'bg-purple-100 text-purple-800 border-purple-200';
+
+    return (
+      <span className={`${baseClasses} ${colorClasses}`}>
+        {role.name}
+      </span>
+    );
+  };
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Editar Usuario" />
 
-      <div className="container mx-auto py-6 space-y-6">
+      <div className="container mx-auto py-6 space-y-6 p-4">
         {/* Header */}
         <div className="flex items-center justify-between flex-col lg:flex-row gap-4">
           <div className="flex items-center lg:gap-3 lg:mb-4 flex-col lg:flex-row p-4">
@@ -76,7 +145,7 @@ export default function Editar({ usuario }: { usuario: UsuarioEditProps }) {
               <CardHeader>
                 <CardTitle>Información del Usuario</CardTitle>
                 <CardDescription>
-                  Complete la información básica del nuevo usuario del sistema
+                  Complete la información básica del usuario del sistema
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -98,6 +167,7 @@ export default function Editar({ usuario }: { usuario: UsuarioEditProps }) {
                       <p className="text-sm text-destructive">{errors.name}</p>
                     )}
                   </div>
+
                   {/* Correo Electrónico */}
                   <div className="space-y-2">
                     <Label htmlFor="correo" className="flex items-center gap-2">
@@ -122,25 +192,28 @@ export default function Editar({ usuario }: { usuario: UsuarioEditProps }) {
                     <div className="space-y-2">
                       <Label htmlFor="password" className="flex items-center gap-2">
                         <KeyRound className="h-4 w-4" />
-                        Contraseña *
+                        Nueva Contraseña
                       </Label>
                       <Input
                         id="password"
                         type="password"
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
-                        placeholder="Mínimo 8 caracteres"
+                        placeholder="Dejar vacío para no cambiar"
                         className={errors.password ? 'border-destructive' : ''}
                       />
                       {errors.password && (
                         <p className="text-sm text-destructive">{errors.password}</p>
                       )}
+                      <p className="text-xs text-muted-foreground">
+                        Dejar vacío si no deseas cambiar la contraseña
+                      </p>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="confirmarPassword" className="flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4" />
-                        Confirmar Contraseña *
+                        Confirmar Contraseña
                       </Label>
                       <Input
                         id="password_confirmation"
@@ -182,6 +255,46 @@ export default function Editar({ usuario }: { usuario: UsuarioEditProps }) {
                     </Select>
                   </div>
 
+                  {/* Roles */}
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Roles Asignados
+                    </Label>
+                    <div className="space-y-2">
+                      {allRoles?.map((role) => (
+                        <div key={role.id} className="flex items-center space-x-3">
+                          <input
+                            type="checkbox"
+                            id={`role-${role.id}`}
+                            checked={data.roles.includes(role.id)}
+                            onChange={() => handleRoleToggle(role.id)}
+                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <Label
+                            htmlFor={`role-${role.id}`}
+                            className="flex items-center gap-2 cursor-pointer flex-1"
+                          >
+                            {getRoleBadge(role)}
+                            <span className="text-xs text-muted-foreground">
+                              ({role.guard_name})
+                            </span>
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    {data.roles.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        El usuario no tiene roles asignados
+                      </p>
+                    )}
+                    <div className="p-2 bg-muted rounded">
+                      <p className="text-sm text-muted-foreground">
+                        <strong>{data.roles.length}</strong> rol(es) seleccionado(s)
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Botones de Acción */}
                   <div className="flex gap-3 pt-4">
                     <Button type="submit" disabled={processing} className="gap-2">
@@ -201,6 +314,46 @@ export default function Editar({ usuario }: { usuario: UsuarioEditProps }) {
 
           {/* Panel Lateral - Información y Guías */}
           <div className="space-y-6">
+            {/* Resumen de Usuario */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Resumen del Usuario</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Información Actual</Label>
+                  <div className="text-sm space-y-1">
+                    <p><strong>Nombre:</strong> {usuario.name}</p>
+                    <p><strong>Email:</strong> {usuario.email}</p>
+                    <p><strong>Estado:</strong>
+                      <Badge variant={usuario.estado === 'activo' ? 'default' : 'secondary'} className="ml-2">
+                        {usuario.estado}
+                      </Badge>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Roles Actuales</Label>
+                  <div className="flex flex-wrap gap-1">
+                    {usuario.roles && usuario.roles.length > 0 ? (
+                      allRoles
+                        ?.filter(role => usuario.roles.includes(role.id))
+                        .map(role => (
+                          <div key={role.id}>
+                            {getRoleBadge(role)}
+                          </div>
+                        ))
+                    ) : (
+                      <Badge variant="outline" className="text-xs">
+                        Sin roles
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Tarjeta de Información */}
             <Card>
               <CardHeader>
@@ -233,52 +386,14 @@ export default function Editar({ usuario }: { usuario: UsuarioEditProps }) {
 
                 <div className="flex items-start gap-3">
                   <div className="p-1 bg-amber-100 rounded-full mt-0.5">
-                    <User className="h-3 w-3 text-amber-600" />
+                    <Shield className="h-3 w-3 text-amber-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Estado del Usuario</p>
+                    <p className="text-sm font-medium">Gestión de Roles</p>
                     <p className="text-xs text-muted-foreground">
-                      Los usuarios inactivos no pueden acceder al sistema
+                      Los roles definen los permisos del usuario en el sistema
                     </p>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Tarjeta de Estados */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Estados Disponibles</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">Activo</span>
-                  </div>
-                  <Badge variant="outline" className="bg-green-50 text-green-700">
-                    Acceso completo
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                    <span className="text-sm">Inactivo</span>
-                  </div>
-                  <Badge variant="outline" className="bg-gray-50 text-gray-700">
-                    Sin acceso
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span className="text-sm">Suspendido</span>
-                  </div>
-                  <Badge variant="outline" className="bg-red-50 text-red-700">
-                    Acceso bloqueado
-                  </Badge>
                 </div>
               </CardContent>
             </Card>
