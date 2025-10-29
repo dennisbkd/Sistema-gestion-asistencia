@@ -63,4 +63,9 @@ class User extends Authenticatable
     {
         return $this->estado === 'activo';
     }
+
+    public function docente()
+    {
+        return $this->hasOne(Docente::class, 'idUsuario');
+    }
 }

@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
+use App\Http\Controllers\MateriaController;
+use App\Http\Controllers\GrupoController;
+use App\Http\Controllers\DocenteController;
+
 Route::get('/', function () {
     return Inertia::render('welcome', [
         'canRegister' => Features::enabled(Features::registration()),
@@ -42,7 +46,31 @@ Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
     Route::post('permisos', [PermisoController::class, 'store'])->name('permisos.Store')->middleware('permission:create permisos');
     Route::get('permisos/edit/{permission}', [PermisoController::class, 'edit'])->name('permisos.Editar')->middleware('permission:edit permisos');
     Route::put('permisos/{permission}', [PermisoController::class, 'update'])->name('permisos.Update')->middleware('permission:edit permisos');
-    Route::delete('permisos/{permission}', [PermisoController::class, 'destroy'])->name('permisos.Destroy')->middleware('permission:delete permisos');     
+    Route::delete('permisos/{permission}', [PermisoController::class, 'destroy'])->name('permisos.Destroy')->middleware('permission:delete permisos');  
+    
+    //rutas de materias
+    Route::get('/materias', [MateriaController::class, 'index'])->name('materias.index');
+    Route::get('/materias/create', [MateriaController::class, 'create'])->name('materias.create');
+    Route::post('/materias', [MateriaController::class, 'store'])->name('materias.store');
+    Route::get('/materias/{materia}/edit', [MateriaController::class, 'edit'])->name('materias.edit');
+    Route::put('/materias/{materia}', [MateriaController::class, 'update'])->name('materias.update');
+    Route::patch('/materias/{materia}/change-status', [MateriaController::class, 'changeStatus'])->name('materias.change-status');
+
+    // Rutas de grupos
+    Route::get('/grupos', [GrupoController::class, 'index'])->name('grupos.index');
+    Route::get('/grupos/create', [GrupoController::class, 'create'])->name('grupos.create');
+    Route::post('/grupos', [GrupoController::class, 'store'])->name('grupos.store');
+    Route::get('/grupos/{grupo}/edit', [GrupoController::class, 'edit'])->name('grupos.edit');
+    Route::put('/grupos/{grupo}', [GrupoController::class, 'update'])->name('grupos.update');
+    Route::patch('/grupos/{grupo}/change-status', [GrupoController::class, 'changeStatus'])->name('grupos.change-status');
+
+    // Rutas de docentes
+    Route::get('/docentes', [DocenteController::class, 'index'])->name('docentes.index');
+    Route::get('/docentes/create', [DocenteController::class, 'create'])->name('docentes.create');
+    Route::post('/docentes', [DocenteController::class, 'store'])->name('docentes.store');
+    Route::get('/docentes/{docente}/edit', [DocenteController::class, 'edit'])->name('docentes.edit');
+    Route::put('/docentes/{docente}', [DocenteController::class, 'update'])->name('docentes.update');
+    Route::patch('/docentes/{docente}/change-status', [DocenteController::class, 'changeStatus'])->name('docentes.change-status');
 });
 
 require __DIR__.'/settings.php';

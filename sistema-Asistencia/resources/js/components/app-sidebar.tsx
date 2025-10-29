@@ -13,11 +13,15 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Users, School } from 'lucide-react';
 import AppLogo from './app-logo';
 import usuarios, { Index } from '@/routes/usuarios';
 import rol from '@/routes/rol';
 import permisos from '@/routes/permisos';
+import materias from '@/routes/materias';
+import { title } from 'process';
+import grupos from '@/routes/grupos';
+import docentes from '@/routes/docentes';
 
 const mainNavItems: NavItem[] = [
     {
@@ -35,6 +39,21 @@ const mainNavItems: NavItem[] = [
             { title: "Roles", href: rol.Index().url },
             { title: "Permisos", href: permisos.Index().url },
         ],
+    },
+    {
+        title: 'Materias',
+        href: materias.index().url,
+        icon: School,
+    },
+    {
+        title: 'Grupos',
+        href: grupos.index().url,
+        icon: Folder,
+    },
+    {
+        title: 'Docentes',
+        href: docentes.index().url,
+        icon: Users,
     }
 ];
 
