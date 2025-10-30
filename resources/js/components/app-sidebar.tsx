@@ -19,6 +19,9 @@ import { Index } from '@/routes/usuarios';
 import rol from '@/routes/rol';
 import permisos from '@/routes/permisos';
 import aula from '@/routes/aula';
+import grupos from '@/routes/grupos';
+import docentes from '@/routes/docentes';
+import materias from '@/routes/materias';
 
 const mainNavItems: NavItem[] = [
     {
@@ -45,6 +48,18 @@ const mainNavItems: NavItem[] = [
             { title: "Aulas", href: aula.Index().url },
             { title: "Cursos", href: "#" },
             { title: "Asignaturas", href: "#" },
+            {
+                title: 'Materias',
+                href: materias.index().url
+            },
+            {
+                title: 'Grupos',
+                href: grupos.index().url
+            },
+            {
+                title: 'Docentes',
+                href: docentes.index().url
+            }
         ],
     }
 ];
