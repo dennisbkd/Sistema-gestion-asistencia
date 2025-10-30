@@ -30,10 +30,11 @@ import {
   User,
   Phone,
   Briefcase,
-  Filter
+  Filter,
+  Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { index, create, edit, changeStatus } from '@/routes/docentes';
+import { index, create, edit, changeStatus, show } from '@/routes/docentes';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -83,7 +84,7 @@ export default function Index({ docentes: docentesData, filters }: IndexProps) {
     const params = new URLSearchParams();
     if (search) params.append('search', search);
     if (selectedEstado) params.append('estado', selectedEstado);
-    
+
     get(index().url + `?${params.toString()}`);
   };
 
@@ -115,7 +116,7 @@ export default function Index({ docentes: docentesData, filters }: IndexProps) {
 
   const changeStatusHandler = (docente: Docente) => {
     const nuevoEstado = docente.estado === 'activo' ? 'inactivo' : 'activo';
-    
+
     router.patch(changeStatus(docente.idDocente).url, {}, {
       onSuccess: () => {
         toast.success(`Docente ${nuevoEstado === 'activo' ? 'activado' : 'desactivado'} exitosamente`);
@@ -143,16 +144,12 @@ export default function Index({ docentes: docentesData, filters }: IndexProps) {
             </p>
           </div>
 
-          {/* <Link href={create().url}>
+          <Link href={create().url}>
             <Button className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Nuevo Docente
             </Button>
-          </Link> */}
-          <Button className="flex items-center gap-2" disabled>
-            <Plus className="h-4 w-4" />
-            Nuevo Docente 
-          </Button>
+          </Link>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -245,7 +242,7 @@ export default function Index({ docentes: docentesData, filters }: IndexProps) {
                 <Filter className="h-4 w-4" />
                 Filtrar
               </Button>
-              
+
               {(search || selectedEstado) && (
                 <Button
                   type="button"
@@ -332,14 +329,20 @@ export default function Index({ docentes: docentesData, filters }: IndexProps) {
                         {getEstadoBadge(docente.estado)}
                       </TableCell>
                       <TableCell className="space-x-2 flex justify-center">
+                        <Link href={show(docente.idDocente).url}>
+                          <Button variant="outline" size="sm" className="flex items-center gap-2">
+                            <Eye className="h-3 w-3" />
+                            Ver
+                          </Button>
+                        </Link>
                         <Link href={edit(docente.idDocente).url}>
                           <Button variant="outline" size="sm" className="flex items-center gap-2">
                             <Edit className="h-3 w-3" />
                             Editar
                           </Button>
                         </Link>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => changeStatusHandler(docente)}
                           className={docente.estado === 'activo' ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-green-600 border-green-200 hover:bg-green-50'}
