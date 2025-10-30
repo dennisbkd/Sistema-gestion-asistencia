@@ -47,14 +47,13 @@ class DocenteController extends Controller
  */
     public function create()
     {
-        $usuarios = User::whereDoesntHave('docente')
-            ->role('docente') // Filtra solo usuarios con rol 'docente'
-            ->select('id', 'name', 'email')
+        $usuarios = User::whereDoesntHave('docente') // Solo usuarios que no sean docentes
+            ->select('id', 'name', 'email', 'estado')
             ->get();
 
         return Inertia::render('docentes/Create', [
             'usuarios' => $usuarios
-    ]);
+        ]);
     }
 
     /**

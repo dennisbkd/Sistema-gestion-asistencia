@@ -143,16 +143,16 @@ export default function Index({ docentes: docentesData, filters }: IndexProps) {
             </p>
           </div>
 
-          {/* <Link href={create().url}>
+          <Link href={create().url}>
             <Button className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Nuevo Docente
             </Button>
-          </Link> */}
-          <Button className="flex items-center gap-2" disabled>
+          </Link>
+          {/* <Button className="flex items-center gap-2" disabled>
             <Plus className="h-4 w-4" />
             Nuevo Docente 
-          </Button>
+          </Button> */}
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

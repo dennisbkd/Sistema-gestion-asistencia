@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Docente;
 
 class User extends Authenticatable
 {
@@ -62,5 +63,10 @@ class User extends Authenticatable
     public function estaActivo()
     {
         return $this->estado === 'activo';
+    }
+
+    public function docente()
+    {
+        return $this->hasOne(Docente::class, 'idUsuario');
     }
 }
