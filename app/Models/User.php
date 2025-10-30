@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -63,4 +64,17 @@ class User extends Authenticatable
     {
         return $this->estado === 'activo';
     }
+        public function docente(): HasOne
+    {
+        return $this->hasOne(Docente::class, 'idUsuario', 'id');
+    }
+
+    /**
+     * Relación con el perfil de docente (alternativa si prefieres belongsTo)
+     */
+    public function perfilDocente(): HasOne
+    {
+        return $this->hasOne(Docente::class, 'idUsuario');
+    }
+
 }

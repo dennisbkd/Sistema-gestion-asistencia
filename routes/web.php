@@ -77,13 +77,18 @@ Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
     Route::patch('/grupos/{grupo}/change-status', [GrupoController::class, 'changeStatus'])->name('grupos.change-status');
 
     // Rutas de docentes
-    Route::get('/docentes', [DocenteController::class, 'index'])->name('docentes.index');
+ Route::get('/docentes', [DocenteController::class, 'index'])->name('docentes.index');
     Route::get('/docentes/create', [DocenteController::class, 'create'])->name('docentes.create');
     Route::post('/docentes', [DocenteController::class, 'store'])->name('docentes.store');
     Route::get('/docentes/{docente}/edit', [DocenteController::class, 'edit'])->name('docentes.edit');
     Route::put('/docentes/{docente}', [DocenteController::class, 'update'])->name('docentes.update');
-    Route::patch('/docentes/{docente}/change-status', [DocenteController::class, 'changeStatus'])->name('docentes.change-status');
-
+    Route::delete('/docentes/{docente}', [DocenteController::class, 'destroy'])->name('docentes.destroy');
+    Route::patch('/docentes/{docente}/status', [DocenteController::class, 'changeStatus'])->name('docentes.changeStatus');
+    
+    // Rutas adicionales
+    Route::get('/docentes/estadisticas', [DocenteController::class, 'estadisticas'])->name('docentes.estadisticas');
+    Route::get('/docentes/buscar', [DocenteController::class, 'buscar'])->name('docentes.buscar');
+    Route::get('/docentes/{docente}', [DocenteController::class, 'show'])->name('docentes.show');
 });
 
 require __DIR__.'/settings.php';
