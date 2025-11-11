@@ -22,6 +22,7 @@ import aula from '@/routes/aula';
 import grupos from '@/routes/grupos';
 import docentes from '@/routes/docentes';
 import materias from '@/routes/materias';
+import inventario from '@/routes/inventario';
 
 const mainNavItems: NavItem[] = [
     {
@@ -59,6 +60,10 @@ const mainNavItems: NavItem[] = [
             {
                 title: 'Docentes',
                 href: docentes.index().url
+            },
+            {
+                title: 'Inventario',
+                href: inventario.index().url
             }
         ],
     }
