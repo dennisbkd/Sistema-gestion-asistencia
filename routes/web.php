@@ -1,9 +1,13 @@
 <?php
 
+use App\Http\Controllers\AsignacionInventarioController;
 use App\Http\Controllers\AulaController;
+use App\Http\Controllers\DetalleInventarioController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\GrupoController;
+use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\MateriaController;
+use App\Http\Controllers\MovimientoInventarioController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -89,6 +93,25 @@ Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
     Route::get('/docentes/estadisticas', [DocenteController::class, 'estadisticas'])->name('docentes.estadisticas');
     Route::get('/docentes/buscar', [DocenteController::class, 'buscar'])->name('docentes.buscar');
     Route::get('/docentes/{docente}', [DocenteController::class, 'show'])->name('docentes.show');
+
+        // // Rutas adicionales
+    Route::get('/inventario/movimientos', [MovimientoInventarioController::class, 'index'])->name('inventario.movimientos.index');
+    Route::get('/inventario/movimientos/registrar', [MovimientoInventarioController::class, 'create'])->name('inventario.movimientos.create');
+    Route::post('/inventario/movimientos', [MovimientoInventarioController::class, 'store'])->name('inventario.movimientos.store');
+
+    // Rutas de inventario
+    Route::get('/inventario', [InventarioController::class, 'index'])->name('inventario.index');
+    Route::get('/inventario/create', [InventarioController::class, 'create'])->name('inventario.create');
+    Route::post('/inventario', [InventarioController::class, 'store'])->name('inventario.store');
+    Route::get('/inventario/{inventario}/edit', [InventarioController::class, 'edit'])->name('inventario.edit');
+    Route::put('/inventario/{inventario}', [InventarioController::class, 'update'])->name('inventario.update');
+
+    Route::get('/inventario/{inventario}/asignar', [AsignacionInventarioController::class, 'create'])->name('inventario.asignar');
+    Route::post('/inventario/{inventario}/asignar', [AsignacionInventarioController::class, 'store'])->name('inventario.asignar.store');
+    Route::get('/inventario/{inventario}/transferir', [AsignacionInventarioController::class, 'createTransferencia'])->name('inventario.transferir.create');
+    Route::post('/inventario/{inventario}/transferir', [AsignacionInventarioController::class, 'transferir'])->name('inventario.transferir.store');
+
+    Route::get('/inventario/{inventario}/detalle', [DetalleInventarioController::class, 'show'])->name('inventario.detalle.show');
 });
 
 require __DIR__.'/settings.php';

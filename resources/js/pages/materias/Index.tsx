@@ -78,7 +78,7 @@ export default function Index({ materias: materiasData, filters }: IndexProps) {
     if (search) params.append('search', search);
     if (selectedSemestre) params.append('semestre', selectedSemestre);
     if (selectedEstado) params.append('estado', selectedEstado);
-    
+
     get(index().url + `?${params.toString()}`);
   };
 
@@ -104,7 +104,7 @@ export default function Index({ materias: materiasData, filters }: IndexProps) {
 
   const changeStatusHandler = (materia: Materia) => {
     const nuevoEstado = materia.estado === 'activo' ? 'inactivo' : 'activo';
-    
+
     router.patch(changeStatus(materia.idMateria).url, {}, {
       onSuccess: () => {
         toast.success(`Materia ${nuevoEstado === 'activo' ? 'activada' : 'desactivada'} exitosamente`);
@@ -114,6 +114,7 @@ export default function Index({ materias: materiasData, filters }: IndexProps) {
       },
     });
   };
+  console.log(materiasData);
 
   const totalMaterias = materiasData.length;
   const materiasActivas = materiasData.filter(m => m.estado === 'activo').length;
@@ -213,7 +214,7 @@ export default function Index({ materias: materiasData, filters }: IndexProps) {
                   className="pl-10"
                 />
               </div>
-              
+
               <select
                 value={selectedSemestre}
                 onChange={(e) => setSelectedSemestre(e.target.value)}
@@ -239,7 +240,7 @@ export default function Index({ materias: materiasData, filters }: IndexProps) {
                 <Filter className="h-4 w-4" />
                 Filtrar
               </Button>
-              
+
               {(search || selectedSemestre || selectedEstado) && (
                 <Button
                   type="button"
@@ -322,8 +323,8 @@ export default function Index({ materias: materiasData, filters }: IndexProps) {
                             Editar
                           </Button>
                         </Link>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => changeStatusHandler(materia)}
                           className={materia.estado === 'activo' ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-green-600 border-green-200 hover:bg-green-50'}
