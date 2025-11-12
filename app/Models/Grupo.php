@@ -23,4 +23,10 @@ class Grupo extends Model
     protected $casts = [
         // Puedes agregar casts si necesitas
     ];
+
+    public function asignaciones()
+    {
+        return $this->hasMany(Asignacion::class, 'idGrupo');
+    }    
+
 }

@@ -27,4 +27,9 @@ class Materia extends Model
     protected $attributes = [
         'estado' => 'activo'
     ];
+
+    public function asignaciones()
+    {
+        return $this->hasMany(Asignacion::class, 'idMateria');
+    }
 }

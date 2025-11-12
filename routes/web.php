@@ -11,6 +11,7 @@ use App\Http\Controllers\MovimientoInventarioController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PeriodoAcademicoController;
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -112,6 +113,19 @@ Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
     Route::post('/inventario/{inventario}/transferir', [AsignacionInventarioController::class, 'transferir'])->name('inventario.transferir.store');
 
     Route::get('/inventario/{inventario}/detalle', [DetalleInventarioController::class, 'show'])->name('inventario.detalle.show');
+
+    // Rutas Periodo Académico
+    Route::get('/periodos-academicos', [PeriodoAcademicoController::class, 'index'])->name('periodos-academicos.index');
+    Route::get('/periodos-academicos/create', [PeriodoAcademicoController::class, 'create'])->name('periodos-academicos.create');
+    Route::post('/periodos-academicos', [PeriodoAcademicoController::class, 'store'])->name('periodos-academicos.store');
+    Route::get('/periodos-academicos/{periodosAcademico}/edit', [PeriodoAcademicoController::class, 'edit'])->name('periodos-academicos.edit');
+    Route::put('/periodos-academicos/{periodosAcademico}', [PeriodoAcademicoController::class, 'update'])->name('periodos-academicos.update');
+    Route::patch('/periodos-academicos/{periodosAcademico}/change-status', [PeriodoAcademicoController::class, 'changeStatus'])->name('periodos-academicos.change-status');
+    // Rutas Periodo Academico para filtros
+    Route::get('/periodos-academicos/{periodosAcademico}/materias', [PeriodoAcademicoController::class, 'materias'])->name('periodos-academicos.materias');
+    Route::get('/periodos-academicos/{periodosAcademico}/docentes', [PeriodoAcademicoController::class, 'docentes'])->name('periodos-academicos.docentes');
+    Route::get('/periodos-academicos/{periodosAcademico}/grupos', [PeriodoAcademicoController::class, 'grupos'])->name('periodos-academicos.grupos');
+    Route::get('/periodos-academicos/{periodosAcademico}/detalle', [PeriodoAcademicoController::class, 'detalle'])->name('periodos-academicos.detalle');
 });
 
 require __DIR__.'/settings.php';

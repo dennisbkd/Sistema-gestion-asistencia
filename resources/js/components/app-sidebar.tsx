@@ -13,7 +13,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookKey, BookOpen, Folder, LayoutGrid, Users } from 'lucide-react';
+import { BookKey, BookOpen, Folder, LayoutGrid, Users, Calendar } from 'lucide-react';
 import AppLogo from './app-logo';
 import { Index } from '@/routes/usuarios';
 import rol from '@/routes/rol';
@@ -23,6 +23,7 @@ import grupos from '@/routes/grupos';
 import docentes from '@/routes/docentes';
 import materias from '@/routes/materias';
 import inventario from '@/routes/inventario';
+import periodosAcademicos from '@/routes/periodos-academicos';
 
 const mainNavItems: NavItem[] = [
     {
@@ -64,6 +65,11 @@ const mainNavItems: NavItem[] = [
             {
                 title: 'Inventario',
                 href: inventario.index().url
+            },
+            {
+                title: 'Períodos Académicos',
+                href: periodosAcademicos.index().url,
+                icon: Calendar
             }
         ],
     }

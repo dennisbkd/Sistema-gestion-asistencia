@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Asignacion extends Model
 {
     protected $table = 'asignacion';
+    protected $primaryKey = 'idAsignacion';
 
     protected $fillable = [
         'idPeriodo',

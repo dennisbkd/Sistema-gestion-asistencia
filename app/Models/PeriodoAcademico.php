@@ -9,60 +9,45 @@ class PeriodoAcademico extends Model
 {
     use HasFactory;
 
-    // Nombre de la tabla
-    protected $table = 'periodoAcademico';
-
-    // Nombre de la clave primaria
+    protected $table = 'periodo_academicos';
     protected $primaryKey = 'idPeriodo';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
-    // Campos que se pueden asignar masivamente
     protected $fillable = [
-        'nombre',
-        'gestion',
-        'semestre',
+        'nroSemestre',
+        'año',
+        'tipoPeriodo',
         'fechaInicio',
         'fechaFin',
         'estado',
     ];
 
-    // Tipos de datos automáticos
     protected $casts = [
+        'nroSemestre' => 'integer',
+        'año' => 'integer',
         'fechaInicio' => 'date',
         'fechaFin' => 'date',
     ];
 
-    // Relaciones ===============================
-
-    /**
-     * Un periodo académico puede tener muchas asignaciones.
-     */
+    // Relaciones
     public function asignaciones()
     {
         return $this->hasMany(Asignacion::class, 'idPeriodo', 'idPeriodo');
     }
 
-    /**
-     * Scope para filtrar periodos activos.
-     */
-    public function scopeActivos($query)
+    public function materias()
     {
-        return $query->where('estado', 'activo');
+        return $this->hasManyThrough(Materia::class, Asignacion::class, 'idPeriodo', 'idMateria', 'idPeriodo', 'idMateria');
     }
 
-    /**
-     * Scope para buscar por gestión y semestre.
-     */
-    public function scopePorGestionSemestre($query, $gestion, $semestre)
+    public function docentes()
     {
-        return $query->where('gestion', $gestion)
-                     ->where('semestre', $semestre);
+        return $this->hasManyThrough(Docente::class, Asignacion::class, 'idPeriodo', 'idDocente', 'idPeriodo', 'idDocente');
     }
 
-    /**
-     * Scope para filtrar periodos finalizados.
-     */
-    public function scopeFinalizados($query)
+    public function grupos()
     {
-        return $query->where('estado', 'finalizado');
+        return $this->hasManyThrough(Grupo::class, Asignacion::class, 'idPeriodo', 'idGrupo', 'idPeriodo', 'idGrupo');
     }
 }
