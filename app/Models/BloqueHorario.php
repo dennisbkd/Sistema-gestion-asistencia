@@ -11,6 +11,7 @@ class BloqueHorario extends Model
     use HasFactory;
 
     protected $table = 'bloquesHorarios';
+    protected $primaryKey = 'idBloque';
 
     protected $fillable = [
         'diaSemana',
