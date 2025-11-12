@@ -5,6 +5,7 @@ use App\Http\Controllers\AulaController;
 use App\Http\Controllers\DetalleInventarioController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\GrupoController;
+use App\Http\Controllers\HorarioDocenteController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\MovimientoInventarioController;
@@ -112,6 +113,11 @@ Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
     Route::post('/inventario/{inventario}/transferir', [AsignacionInventarioController::class, 'transferir'])->name('inventario.transferir.store');
 
     Route::get('/inventario/{inventario}/detalle', [DetalleInventarioController::class, 'show'])->name('inventario.detalle.show');
+
+    // //rutas de horario docente
+    Route::get('/horario', [HorarioDocenteController::class, 'index'])->name('horario.index');
+    Route::get('/horario/semanal', [HorarioDocenteController::class, 'horarioSemanal'])->name('horario.semanal');
+    Route::get('/horario/materia/{materia}', [HorarioDocenteController::class, 'showMateria'])->name('horario.materia');
 });
 
 require __DIR__.'/settings.php';
