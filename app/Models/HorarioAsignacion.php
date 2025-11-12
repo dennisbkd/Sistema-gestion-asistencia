@@ -11,6 +11,7 @@ class HorarioAsignacion extends Model
     use HasFactory;
 
     protected $table = 'horarioAsignacion';
+    protected $primaryKey = 'idHorarioAsignacion';
 
     protected $fillable = [
         'idAsignacion',

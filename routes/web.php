@@ -5,6 +5,7 @@ use App\Http\Controllers\AulaController;
 use App\Http\Controllers\DetalleInventarioController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\GrupoController;
+use App\Http\Controllers\HorarioDocenteController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\MovimientoInventarioController;
@@ -126,6 +127,10 @@ Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
     Route::get('/periodos-academicos/{periodosAcademico}/docentes', [PeriodoAcademicoController::class, 'docentes'])->name('periodos-academicos.docentes');
     Route::get('/periodos-academicos/{periodosAcademico}/grupos', [PeriodoAcademicoController::class, 'grupos'])->name('periodos-academicos.grupos');
     Route::get('/periodos-academicos/{periodosAcademico}/detalle', [PeriodoAcademicoController::class, 'detalle'])->name('periodos-academicos.detalle');
+    // //rutas de horario docente
+    Route::get('/horario', [HorarioDocenteController::class, 'index'])->name('horario.index');
+    Route::get('/horario/semanal', [HorarioDocenteController::class, 'horarioSemanal'])->name('horario.semanal');
+    Route::get('/horario/materia/{materia}', [HorarioDocenteController::class, 'showMateria'])->name('horario.materia');
 });
 
 require __DIR__.'/settings.php';
