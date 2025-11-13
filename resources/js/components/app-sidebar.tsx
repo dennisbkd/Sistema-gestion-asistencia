@@ -24,8 +24,13 @@ import docentes from '@/routes/docentes';
 import materias from '@/routes/materias';
 import inventario from '@/routes/inventario';
 import periodosAcademicos from '@/routes/periodos-academicos';
-import bloquesHorarios from '@/routes/bloques-horarios';
+import horario from '@/routes/horario';
+import asistencia from '@/routes/asistencia';
+import bitacora from '@/routes/bitacora';
 import asignaciones from '@/routes/asignaciones';
+import bloquesHorarios from '@/routes/bloques-horarios';
+// import horario from '@/routes/horario';
+
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
@@ -38,7 +43,7 @@ const mainNavItems: NavItem[] = [
         icon: Users,
         children: [
             { title: "Usuarios", href: "/usuarios" },
-            { title: "Bitácora", href: "/bitacora" },
+            { title: "Bitácora", href: bitacora.index().url },
             { title: "Roles", href: rol.Index().url },
             { title: "Permisos", href: permisos.Index().url },
         ],
@@ -71,14 +76,24 @@ const mainNavItems: NavItem[] = [
                 title: 'Períodos Académicos',
                 href: periodosAcademicos.index().url,
                 icon: Calendar
-            },
+            }
+            ,
             {
-                title: 'Bloque Horarios',
-                href: bloquesHorarios.index().url,
+                title: 'Horarios',
+                href: horario.index().url
+            }
+            ,
+            {
+                title: 'Asistencias',
+                href: asistencia.index().url
             },
             {
                 title: 'Asignaciones',
-                href:asignaciones.index().url,
+                href: asignaciones.index().url
+            },
+            {
+                title: 'Bloque-Horarios',
+                href: bloquesHorarios.index().url
             }
         ],
     }

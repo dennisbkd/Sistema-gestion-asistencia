@@ -46,7 +46,8 @@ interface UsuarioProps {
   ultima_ip: string | null;
   ultima_actividad: string | null;
   dispositivo: string | null;
-  roles: Role[]; // Nuevo campo para roles
+  tiempo_conectado: string | null; // Nuevo campo
+  roles: Role[];
 }
 
 export default function Index({ usuarios: initialUsuarios }: { usuarios: UsuarioProps[] }) {
@@ -68,6 +69,22 @@ export default function Index({ usuarios: initialUsuarios }: { usuarios: Usuario
     );
   };
 
+  const toggleUserStatus = (usuarioId: number, estadoActual: string) => {
+    const nuevoEstado = estadoActual === 'activo' ? 'inactivo' : 'activo';
+    const togglePromise = new Promise((resolve, reject) => {
+      router.patch(`/usuarios/${usuarioId}/toggle-status`, {}, {
+        onSuccess: () => resolve('success'),
+        onError: (errors) => reject(new Error(Object.values(errors).join(', ')))
+      });
+    });
+
+    toast.promise(togglePromise, {
+      loading: 'Cambiando estado...',
+      success: `Usuario ${nuevoEstado === 'activo' ? 'activado' : 'desactivado'} correctamente`,
+      error: (error) => `Error: ${error.message}`
+    });
+  };
+
   const getRoleBadge = (role: Role) => {
     const roleColors: Record<string, string> = {
       'administrador': 'bg-red-100 text-red-800 border-red-200',
@@ -85,7 +102,6 @@ export default function Index({ usuarios: initialUsuarios }: { usuarios: Usuario
       </span>
     );
   };
-
   const eliminarUsuario = (usuarioId: number) => {
     const eliminarPromise = new Promise((resolve, reject) => {
       try {
@@ -189,6 +205,7 @@ export default function Index({ usuarios: initialUsuarios }: { usuarios: Usuario
               </TableRow>
             ) : (
               usuarios.map((usuario) => (
+                // En tu TableBody, actualiza las celdas para el usuario:
                 <TableRow key={usuario.id} className="hover:bg-muted/50">
                   <TableCell className="font-medium">{usuario.id}</TableCell>
                   <TableCell className="font-medium">{usuario.name}</TableCell>
@@ -209,27 +226,58 @@ export default function Index({ usuarios: initialUsuarios }: { usuarios: Usuario
                     </div>
                   </TableCell>
                   <TableCell>{getEstadoBadge(usuario.estado)}</TableCell>
-                  <TableCell>{getOnlineStatus(usuario.en_linea)}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-3 h-3 rounded-full ${usuario.en_linea
+                          ? 'bg-green-500 animate-pulse'
+                          : 'bg-gray-300'
+                          }`}
+                      />
+                      <span className="text-sm font-medium">
+                        {usuario.en_linea ? 'En línea' : 'Desconectado'}
+                      </span>
+                      {usuario.tiempo_conectado && usuario.en_linea && (
+                        <span className="text-xs text-muted-foreground">
+                          ({usuario.tiempo_conectado})
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="font-mono text-sm">
                     {usuario.ultima_ip || 'N/A'}
                   </TableCell>
                   <TableCell className="text-sm">
                     {formatDate(usuario.ultima_actividad)}
                   </TableCell>
-                  <TableCell className="text-sm max-w-[120px] truncate">
+                  <TableCell className="text-sm max-w-[150px] truncate" title={usuario.dispositivo || ''}>
                     {usuario.dispositivo || 'N/A'}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      {can('edit usuarios') && <Link href={UserController.Edit(usuario.id).url}>
-                        <Button variant="outline" size="sm">
-                          Editar
+                      {can('edit usuarios') && (
+                        <Link href={UserController.Edit(usuario.id).url}>
+                          <Button variant="outline" size="sm">
+                            Editar
+                          </Button>
+                        </Link>
+                      )}
+                      {can('delete usuarios') && (
+                        <AlertDeleteUsuario
+                          eliminarUsuario={() => eliminarUsuario(usuario.id)}
+                          processing={processing}
+                        />
+                      )}
+                      {can('edit usuarios') && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => toggleUserStatus(usuario.id, usuario.estado)}
+                          title={usuario.estado === 'activo' ? 'Desactivar usuario' : 'Activar usuario'}
+                        >
+                          {usuario.estado === 'activo' ? '⏸️' : '▶️'}
                         </Button>
-                      </Link>}
-                      {can('delete usuarios') && <AlertDeleteUsuario
-                        eliminarUsuario={() => eliminarUsuario(usuario.id)}
-                        processing={processing}
-                      />}
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
