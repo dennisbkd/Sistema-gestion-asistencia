@@ -26,6 +26,7 @@ import inventario from '@/routes/inventario';
 import periodosAcademicos from '@/routes/periodos-academicos';
 import horario from '@/routes/horario';
 import asistencia from '@/routes/asistencia';
+import bitacora from '@/routes/bitacora';
 // import horario from '@/routes/horario';
 
 const mainNavItems: NavItem[] = [
@@ -40,7 +41,7 @@ const mainNavItems: NavItem[] = [
         icon: Users,
         children: [
             { title: "Usuarios", href: "/usuarios" },
-            { title: "Bitácora", href: "/bitacora" },
+            { title: "Bitácora", href: bitacora.index().url },
             { title: "Roles", href: rol.Index().url },
             { title: "Permisos", href: permisos.Index().url },
         ],

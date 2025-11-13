@@ -6,6 +6,7 @@ use App\Models\Asistencia;
 use App\Models\Asignacion;
 use App\Models\HorarioAsignacion;
 use App\Models\Docente;
+use App\Traits\RegistrarBitacora;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -15,9 +16,11 @@ use Illuminate\Support\Str;
 
 class AsistenciaController extends Controller
 {
+    use RegistrarBitacora;
     /**
      * Display the attendance interface
      */
+
 public function index()
 {
     $userId = Auth::id();
@@ -138,6 +141,16 @@ public function generarQR($horarioId)
         'horario_id' => $horarioId,
     ];
 
+    // $this->registrarBitacora(
+    // 'GENERAR_QR',
+    // 'ASISTENCIA',
+    // 'QR',
+    // "QR generado para clase: {$asistencia->idAsistencia}",
+    // null,
+    // ['token' => $asistencia->token_qr, 'expira_en' => $asistencia->qr_expiracion_at],
+    // $asistencia->idAsistencia
+    // );
+
     // IMPORTANTE: En Inertia, usar with() para pasar datos flash
     return redirect()->route('asistencia.index')
         ->with('qr_data', $qrData)
@@ -213,6 +226,16 @@ public function escanearQR($token)
             'ausente' => "Asistencia registrada con {$minutosRetraso} minutos de retraso (ausencia)",
             default => "Asistencia registrada"
         };
+
+         $this->registrarBitacora(
+                'ESCANEAR_QR',
+                'ASISTENCIA',
+                'REGISTRO',
+                "Asistencia registrada: {$asistencia->idAsistencia} - Estado: {$estado}",
+                ['estado_anterior' => 'pendiente', 'token' => $token],
+                ['estado_nuevo' => $estado, 'minutos_retraso' => $minutosRetraso, 'hora_registro' => $horaRegistro],
+                $asistencia->idAsistencia
+            );
 
         return inertia('asistencia/QrSuccess', [
             'mensaje' => $mensaje,
@@ -298,6 +321,15 @@ public function justificarFalta(Request $request, $horarioId)
             'qr_expiracion_at' => null,
         ]
     );
+    $this->registrarBitacora(
+                'JUSTIFICAR_FALTA',
+                'ASISTENCIA',
+                'JUSTIFICACION',
+                "Falta justificada: {$asistencia->idAsistencia}",
+                ['estado_anterior' => $asistencia->estado ?? 'no_registrado'],
+                ['estado_nuevo' => 'justificado', 'justificacion' => $request->justificacion],
+                $asistencia->idAsistencia
+            );
 
     return redirect()->route('asistencia.index')
         ->with('success', 'Falta justificada correctamente.');
