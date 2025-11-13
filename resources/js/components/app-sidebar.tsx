@@ -24,6 +24,7 @@ import docentes from '@/routes/docentes';
 import materias from '@/routes/materias';
 import inventario from '@/routes/inventario';
 import horario from '@/routes/horario';
+import asistencia from '@/routes/asistencia';
 // import horario from '@/routes/horario';
 
 const mainNavItems: NavItem[] = [
@@ -71,6 +72,11 @@ const mainNavItems: NavItem[] = [
             {
                 title: 'Horarios',
                 href: horario.index().url
+            }
+            ,
+            {
+                title: 'Asistencias',
+                href: asistencia.index().url
             }
         ],
     }
