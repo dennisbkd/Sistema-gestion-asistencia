@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AsignacionInventarioController;
+use App\Http\Controllers\AsistenciaController;
 use App\Http\Controllers\AulaController;
 use App\Http\Controllers\DetalleInventarioController;
 use App\Http\Controllers\DocenteController;
@@ -118,6 +119,15 @@ Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
     Route::get('/horario', [HorarioDocenteController::class, 'index'])->name('horario.index');
     Route::get('/horario/semanal', [HorarioDocenteController::class, 'horarioSemanal'])->name('horario.semanal');
     Route::get('/horario/materia/{materia}', [HorarioDocenteController::class, 'showMateria'])->name('horario.materia');
+
+
+    Route::get('/asistencia', [AsistenciaController::class, 'index'])->name('asistencia.index');
+    Route::get('/historial', [AsistenciaController::class, 'historial'])->name('asistencia.historial');
+    Route::post('/asistencia/generar-qr/{horario}', [AsistenciaController::class, 'generarQR'])->name('asistencia.generar-qr');
+    Route::post('/asistencia/justificar/{horario}', [AsistenciaController::class, 'justificarFalta'])->name('asistencia.justificar');
+    Route::get('/asistencia/qr/{token}', [AsistenciaController::class, 'escanearQR'])
+    ->name('asistencia.qr');
+    Route::post('/api/asistencia/generar-qr/{horario}', [AsistenciaController::class, 'generarQRApi'])->name('api.asistencia.generar-qr');
 });
 
 require __DIR__.'/settings.php';
