@@ -130,15 +130,26 @@ export default class PDFGenerator {
     });
   }
 
-  private _obtenerValor(obj: Record<string, unknown>, key: string): string {
-    const claveNormalizada = key
-      .toLowerCase()
-      .replace(/\s/g, "")
-      .replace(/[áéíóú]/g, (m) => "aeiou"["áéíóú".indexOf(m)]);
+  // private _obtenerValor(obj: Record<string, unknown>, key: string): string {
+  //   const claveNormalizada = key
+  //     .toLowerCase()
+  //     .replace(/\s/g, "")
+  //     .replace(/[áéíóú]/g, (m) => "aeiou"["áéíóú".indexOf(m)]);
 
-    const encontrado = Object.keys(obj).find(
-      (k) => k.toLowerCase().replace(/\s/g, "") === claveNormalizada
-    );
+  //   const encontrado = Object.keys(obj).find(
+  //     (k) => k.toLowerCase().replace(/\s/g, "") === claveNormalizada
+  //   );
+
+  //   let valor = encontrado ? obj[encontrado] : "-";
+  //   if (valor == null || valor === "") valor = "-";
+  //   if (typeof valor === "boolean") valor = valor ? "Sí" : "No";
+  //   if (valor instanceof Date) valor = valor.toLocaleDateString("es-ES");
+
+  //   return String(valor);
+  // }
+
+  private _obtenerValor(obj: Record<string, unknown>, key: string): string {
+    const encontrado = Object.keys(obj).find(k => k.toLowerCase() === key.toLowerCase());
 
     let valor = encontrado ? obj[encontrado] : "-";
     if (valor == null || valor === "") valor = "-";

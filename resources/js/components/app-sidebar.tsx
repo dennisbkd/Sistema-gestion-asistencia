@@ -24,7 +24,8 @@ import docentes from '@/routes/docentes';
 import materias from '@/routes/materias';
 import inventario from '@/routes/inventario';
 import periodosAcademicos from '@/routes/periodos-academicos';
-
+import bloquesHorarios from '@/routes/bloques-horarios';
+import asignaciones from '@/routes/asignaciones';
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
@@ -70,6 +71,14 @@ const mainNavItems: NavItem[] = [
                 title: 'Períodos Académicos',
                 href: periodosAcademicos.index().url,
                 icon: Calendar
+            },
+            {
+                title: 'Bloque Horarios',
+                href: bloquesHorarios.index().url,
+            },
+            {
+                title: 'Asignaciones',
+                href:asignaciones.index().url,
             }
         ],
     }
