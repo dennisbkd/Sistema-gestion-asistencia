@@ -3,6 +3,7 @@
 use App\Http\Controllers\AsignacionInventarioController;
 use App\Http\Controllers\AsistenciaController;
 use App\Http\Controllers\AulaController;
+use App\Http\Controllers\BitacoraController;
 use App\Http\Controllers\DetalleInventarioController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\GrupoController;
@@ -31,11 +32,13 @@ Route::get('/NoAutorizado', function () {
     return Inertia::render('usuarios/NoAutorizado'); // ← Con carpeta usuarios/
 })->name('NoAutorizado');
 
-Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
+Route::middleware(['auth', 'verified', 'user.active', 'track.activity'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
      Route::get('usuarios', [UserController::class, 'Index'])->name('usuarios.Index');
+     Route::patch('/usuarios/{user}/toggle-status', [UserController::class, 'toggleStatus'])
+    ->name('usuarios.toggle-status');
     Route::get('usuarios/create', [UserController::class, 'create'])->name('usuarios.Create');
     Route::post('usuarios', [UserController::class, 'store'])->name('usuarios.store');
     Route::get('usuarios/editar/{user}',[UserController::class,'Edit'])->name('usuarios.Editar');
@@ -141,6 +144,10 @@ Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
     Route::get('/asistencia/qr/{token}', [AsistenciaController::class, 'escanearQR'])
     ->name('asistencia.qr');
     Route::post('/api/asistencia/generar-qr/{horario}', [AsistenciaController::class, 'generarQRApi'])->name('api.asistencia.generar-qr');
+
+    //ruta bitacora
+     Route::get('/bitacora', [BitacoraController::class, 'index'])->name('bitacora.index');
+    Route::get('/bitacora/exportar', [BitacoraController::class, 'exportar'])->name('bitacora.exportar');
 });
 
 require __DIR__.'/settings.php';
