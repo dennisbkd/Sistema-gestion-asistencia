@@ -19,11 +19,11 @@ class DetalleInventarioController extends Controller
         // Obtener todas las aulas para posibles filtros
         $aulas = Aula::all();
         
-        // Obtener distribución por aulas (agrupado por aula)
+        // Obtener distribución por aulas (agrupado por aula) - CORREGIDO
         $distribucionAulas = DetalleInventario::with('aula')
             ->where('idInventario', $inventarioId)
-            ->selectRaw('idAula, SUM(cantidad) as total, estado')
-            ->groupBy('idAula', 'estado')
+            ->selectRaw('"idAula", SUM(cantidad) as total, estado') // ← "idAula" entre comillas
+            ->groupBy('"idAula"', 'estado') // ← "idAula" entre comillas también aquí
             ->get()
             ->groupBy('idAula');
         
