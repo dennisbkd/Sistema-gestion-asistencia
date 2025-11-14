@@ -45,7 +45,7 @@ export default function Index({ asignaciones: asignacionesData, periodos, filter
     if (search) params.append('search', search);
     if (selectedEstado && selectedEstado !== 'all') params.append('estado', selectedEstado);
     if (selectedPeriodo && selectedPeriodo !== 'all') params.append('periodo', selectedPeriodo);
-    
+
     router.get(asignaciones.index().url + `?${params.toString()}`);
   };
 
@@ -58,18 +58,18 @@ export default function Index({ asignaciones: asignacionesData, periodos, filter
 
   // 🧾 Función para mostrar los filtros en texto legible
   const obtenerFiltrosLegibles = () => {
-      const filtroLegible: Record<string, string> = {};
+    const filtroLegible: Record<string, string> = {};
 
-      if (search) filtroLegible["Búsqueda"] = search;
-      if (selectedEstado && selectedEstado !== 'all') {
-        filtroLegible["Estado"] = selectedEstado.charAt(0).toUpperCase() + selectedEstado.slice(1);
-      }
-      if (selectedPeriodo && selectedPeriodo !== 'all') {
-        const periodo = periodos.find(p => p.idPeriodo.toString() === selectedPeriodo);
-        filtroLegible["Período"] = periodo ? `${periodo.año} - Semestre ${periodo.nroSemestre}` : selectedPeriodo;
-      }
+    if (search) filtroLegible["Búsqueda"] = search;
+    if (selectedEstado && selectedEstado !== 'all') {
+      filtroLegible["Estado"] = selectedEstado.charAt(0).toUpperCase() + selectedEstado.slice(1);
+    }
+    if (selectedPeriodo && selectedPeriodo !== 'all') {
+      const periodo = periodos.find(p => p.idPeriodo.toString() === selectedPeriodo);
+      filtroLegible["Período"] = periodo ? `${periodo.año} - Semestre ${periodo.nroSemestre}` : selectedPeriodo;
+    }
 
-      return filtroLegible;
+    return filtroLegible;
   };
 
   const obtenerPeriodoActual = () => {
@@ -103,7 +103,7 @@ export default function Index({ asignaciones: asignacionesData, periodos, filter
       ]
     }
   ];
-
+  console.log("asignacionesData", asignacionesData);
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Gestión de Asignaciones" />
@@ -125,7 +125,7 @@ export default function Index({ asignaciones: asignacionesData, periodos, filter
               secciones={seccionesReporte}
               disabled={asignacionesData.length === 0}
             />
-            
+
             <Link href={asignaciones.create().url}>
               <Button className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />

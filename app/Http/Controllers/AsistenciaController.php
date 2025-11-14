@@ -141,15 +141,15 @@ public function generarQR($horarioId)
         'horario_id' => $horarioId,
     ];
 
-    // $this->registrarBitacora(
-    // 'GENERAR_QR',
-    // 'ASISTENCIA',
-    // 'QR',
-    // "QR generado para clase: {$asistencia->idAsistencia}",
-    // null,
-    // ['token' => $asistencia->token_qr, 'expira_en' => $asistencia->qr_expiracion_at],
-    // $asistencia->idAsistencia
-    // );
+    $this->registrarBitacora(
+    'GENERAR_QR',
+    'ASISTENCIA',
+    'QR',
+    "QR generado para clase: {$asistencia->idAsistencia}",
+    null,
+    ['token' => $asistencia->token_qr, 'expira_en' => $asistencia->qr_expiracion_at],
+    $asistencia->idAsistencia
+    );
 
     // IMPORTANTE: En Inertia, usar with() para pasar datos flash
     return redirect()->route('asistencia.index')
