@@ -27,6 +27,8 @@ import periodosAcademicos from '@/routes/periodos-academicos';
 import horario from '@/routes/horario';
 import asistencia from '@/routes/asistencia';
 import bitacora from '@/routes/bitacora';
+import asignaciones from '@/routes/asignaciones';
+import bloquesHorarios from '@/routes/bloques-horarios';
 // import horario from '@/routes/horario';
 
 const mainNavItems: NavItem[] = [
@@ -84,6 +86,14 @@ const mainNavItems: NavItem[] = [
             {
                 title: 'Asistencias',
                 href: asistencia.index().url
+            },
+            {
+                title: 'Asignaciones',
+                href: asignaciones.index().url
+            },
+            {
+                title: 'Bloque-Horarios',
+                href: bloquesHorarios.index().url
             }
         ],
     }

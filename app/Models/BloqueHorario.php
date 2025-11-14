@@ -52,10 +52,22 @@ class BloqueHorario extends Model
     }
 
     /**
-     * Obtener horario formateado
+     * Obtener horarioIni formateado
      */
-    public function getHorarioFormateadoAttribute(): string
+    protected function horaInicioFormateada(): Attribute
     {
-        return $this->horaInicio->format('H:i') . ' - ' . $this->horaFin->format('H:i');
+        return Attribute::make(
+            get: fn () => $this->horaInicio ? $this->horaInicio->format('H:i') : null,
+        );
+    }
+
+    /**
+     * Accessor para horaFin formateada
+     */
+    protected function horaFinFormateada(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->horaFin ? $this->horaFin->format('H:i') : null,
+        );
     }
 }

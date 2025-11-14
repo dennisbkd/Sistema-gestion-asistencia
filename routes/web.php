@@ -15,6 +15,8 @@ use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PeriodoAcademicoController;
+use App\Http\Controllers\BloqueHorarioController;
+use App\Http\Controllers\AsignacionController;
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -148,6 +150,31 @@ Route::middleware(['auth', 'verified', 'user.active', 'track.activity'])->group(
     //ruta bitacora
      Route::get('/bitacora', [BitacoraController::class, 'index'])->name('bitacora.index');
     Route::get('/bitacora/exportar', [BitacoraController::class, 'exportar'])->name('bitacora.exportar');
+
+    // Rutas horarios
+    Route::get('bloques-horarios', [BloqueHorarioController::class, 'index'])->name('bloques-horarios.index');
+    Route::get('bloques-horarios/create', [BloqueHorarioController::class, 'create'])->name('bloques-horarios.create');
+    Route::post('bloques-horarios', [BloqueHorarioController::class, 'store'])->name('bloques-horarios.store');
+    Route::get('bloques-horarios/{bloquesHorario}', [BloqueHorarioController::class, 'show'])->name('bloques-horarios.show');
+    Route::get('bloques-horarios/{bloquesHorario}/edit', [BloqueHorarioController::class, 'edit'])->name('bloques-horarios.edit');
+    Route::put('bloques-horarios/{bloquesHorario}', [BloqueHorarioController::class, 'update'])->name('bloques-horarios.update');
+    Route::delete('bloques-horarios/{bloquesHorario}', [BloqueHorarioController::class, 'destroy'])->name('bloques-horarios.destroy');
+    Route::get('bloques-horarios/{bloquesHorario}/detalle', [BloqueHorarioController::class, 'detalle'])->name('bloques-horarios.detalle');
+    Route::get('bloques-horarios/{bloquesHorario}/materias', [BloqueHorarioController::class, 'materias'])->name('bloques-horarios.materias');
+    Route::get('bloques-horarios/{bloquesHorario}/docentes', [BloqueHorarioController::class, 'docentes'])->name('bloques-horarios.docentes');
+    Route::get('bloques-horarios/{bloquesHorario}/grupos', [BloqueHorarioController::class, 'grupos'])->name('bloques-horarios.grupos');
+    Route::get('bloques-horarios/{bloquesHorario}/aulas', [BloqueHorarioController::class, 'aulas'])->name('bloques-horarios.aulas');
+
+    // Rutas de Asignaciones
+    Route::get('/asignaciones', [AsignacionController::class, 'index'])->name('asignaciones.index');
+    Route::get('/asignaciones/create', [AsignacionController::class, 'create'])->name('asignaciones.create');
+    Route::post('/asignaciones', [AsignacionController::class, 'store'])->name('asignaciones.store');
+    Route::get('/asignaciones/{asignacion}/edit', [AsignacionController::class, 'edit'])->name('asignaciones.edit');
+    Route::put('/asignaciones/{asignacion}', [AsignacionController::class, 'update'])->name('asignaciones.update');
+    Route::patch('/asignaciones/{asignacion}/change-status', [AsignacionController::class, 'changeStatus'])->name('asignaciones.change-status');
+    Route::get('/asignaciones/{asignacion}', [AsignacionController::class, 'show'])->name('asignaciones.show');
+    Route::get('/asignaciones/{asignacion}/detalle', [AsignacionController::class, 'show'])->name('asignaciones.detalle');
+
 });
 
 require __DIR__.'/settings.php';

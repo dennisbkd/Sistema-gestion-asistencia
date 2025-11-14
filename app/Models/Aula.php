@@ -51,4 +51,12 @@ class Aula extends Model
     {
         return $this->inventario()->funcionales()->with('inventarios');
     }
+
+    /**
+     * Relación con horarios de asignación
+     */
+    public function horariosAsignacion(): HasMany
+    {
+        return $this->hasMany(HorarioAsignacion::class, 'idAula', 'idAula');
+    }
 }
