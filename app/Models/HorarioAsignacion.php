@@ -43,4 +43,9 @@ class HorarioAsignacion extends Model
     {
         return $this->belongsTo(Aula::class, 'idAula');
     }
+
+    public function asistencias()
+    {
+        return $this->hasMany(Asistencia::class, 'idHorarioAsignacion');
+    }
 }

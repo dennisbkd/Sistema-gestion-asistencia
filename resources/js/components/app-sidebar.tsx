@@ -30,6 +30,7 @@ import bitacora from '@/routes/bitacora';
 import asignaciones from '@/routes/asignaciones';
 import bloquesHorarios from '@/routes/bloques-horarios';
 // import horario from '@/routes/horario';
+import reportes from '@/routes/reportes';
 
 const mainNavItems: NavItem[] = [
     {
@@ -94,6 +95,10 @@ const mainNavItems: NavItem[] = [
             {
                 title: 'Bloque-Horarios',
                 href: bloquesHorarios.index().url
+            },
+            {
+                title: 'Reportes',
+                href: reportes.index().url
             }
         ],
     }

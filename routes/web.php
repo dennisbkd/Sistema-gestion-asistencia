@@ -17,6 +17,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PeriodoAcademicoController;
 use App\Http\Controllers\BloqueHorarioController;
 use App\Http\Controllers\AsignacionController;
+use App\Http\Controllers\ReporteController; 
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -174,6 +175,17 @@ Route::middleware(['auth', 'verified', 'user.active', 'track.activity'])->group(
     Route::patch('/asignaciones/{asignacion}/change-status', [AsignacionController::class, 'changeStatus'])->name('asignaciones.change-status');
     Route::get('/asignaciones/{asignacion}', [AsignacionController::class, 'show'])->name('asignaciones.show');
     Route::get('/asignaciones/{asignacion}/detalle', [AsignacionController::class, 'show'])->name('asignaciones.detalle');
+
+    // Rutas para reportes
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes/dashboard', [ReporteController::class, 'dashboard'])->name('reportes.dashboard');
+    Route::get('/reportes/asistencias', [ReporteController::class, 'asistencias'])->name('reportes.asistencias');
+    Route::get('/reportes/asignaciones', [ReporteController::class, 'asignaciones'])->name('reportes.asignaciones');
+    Route::get('/reportes/resumen-asistencias', [ReporteController::class, 'resumenAsistencias'])->name('reportes.resumen-asistencias');
+    Route::get('/reportes/horarios-docente', [ReporteController::class, 'horariosDocente'])->name('reportes.horarios-docente');
+    // routes/web.php
+    Route::get('/reportes/utilizacion-aulas', [ReporteController::class, 'utilizacionAulas'])->name('reportes.utilizacion-aulas');
+    Route::post('/reportes/exportar-utilizacion-aulas', [ReporteController::class, 'exportarUtilizacionAulas'])->name('reportes.exportar-utilizacion-aulas');
 
 });
 

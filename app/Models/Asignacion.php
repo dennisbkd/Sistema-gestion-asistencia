@@ -60,4 +60,9 @@ class Asignacion extends Model
     {
         return $this->hasMany(HorarioAsignacion::class, 'idAsignacion');
     }
+
+    public function asistencias(): HasMany
+    {
+        return $this->hasMany(Asistencia::class, 'idAsignacion', 'idAsignacion');
+    }
 }

@@ -10,6 +10,7 @@ class Aula extends Model
 {
     /** @use HasFactory<\Database\Factories\AulaFactory> */
     use HasFactory;
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'codigoAula',
@@ -57,6 +58,6 @@ class Aula extends Model
      */
     public function horariosAsignacion(): HasMany
     {
-        return $this->hasMany(HorarioAsignacion::class, 'idAula', 'idAula');
+        return $this->hasMany(HorarioAsignacion::class, 'idAula', 'id');
     }
 }
