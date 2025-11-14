@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { index, create, edit, changeStatus } from '@/routes/materias';
+import { can } from '@/lib/can';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -134,12 +135,13 @@ export default function Index({ materias: materiasData, filters }: IndexProps) {
             </p>
           </div>
 
-          <Link href={create().url}>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nueva Materia
-            </Button>
-          </Link>
+          {can('create materias') && (
+            <Link href={create().url}>
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Nueva Materia
+              </Button>
+            </Link>)}
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -317,20 +319,24 @@ export default function Index({ materias: materiasData, filters }: IndexProps) {
                         {new Date(materia.created_at).toLocaleDateString('es-BO')}
                       </TableCell>
                       <TableCell className="space-x-2 flex justify-center">
-                        <Link href={edit(materia.idMateria).url}>
-                          <Button variant="outline" size="sm" className="flex items-center gap-2">
-                            <Edit className="h-3 w-3" />
-                            Editar
+                        {can('edit materias') && (
+                          <Link href={edit(materia.idMateria).url}>
+                            <Button variant="outline" size="sm" className="flex items-center gap-2">
+                              <Edit className="h-3 w-3" />
+                              Editar
+                            </Button>
+                          </Link>
+                        )}
+                        {can('edit materias') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => changeStatusHandler(materia)}
+                            className={materia.estado === 'activo' ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-green-600 border-green-200 hover:bg-green-50'}
+                          >
+                            {materia.estado === 'activo' ? 'Desactivar' : 'Activar'}
                           </Button>
-                        </Link>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => changeStatusHandler(materia)}
-                          className={materia.estado === 'activo' ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-green-600 border-green-200 hover:bg-green-50'}
-                        >
-                          {materia.estado === 'activo' ? 'Desactivar' : 'Activar'}
-                        </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

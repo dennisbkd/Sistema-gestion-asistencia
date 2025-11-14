@@ -54,8 +54,6 @@ const mainNavItems: NavItem[] = [
         icon: BookKey,
         children: [
             { title: "Aulas", href: aula.Index().url },
-            { title: "Cursos", href: "#" },
-            { title: "Asignaturas", href: "#" },
             {
                 title: 'Materias',
                 href: materias.index().url

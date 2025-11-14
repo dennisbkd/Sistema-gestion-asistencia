@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { index, create, edit, changeStatus } from '@/routes/grupos';
+import { can } from '@/lib/can';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -70,7 +71,7 @@ export default function Index({ grupos: gruposData, filters }: IndexProps) {
     const params = new URLSearchParams();
     if (search) params.append('search', search);
     if (selectedEstado) params.append('estado', selectedEstado);
-    
+
     get(index().url + `?${params.toString()}`);
   };
 
@@ -95,7 +96,7 @@ export default function Index({ grupos: gruposData, filters }: IndexProps) {
 
   const changeStatusHandler = (grupo: Grupo) => {
     const nuevoEstado = grupo.estado === 'activo' ? 'inactivo' : 'activo';
-    
+
     router.patch(changeStatus(grupo.idGrupo).url, {}, {
       onSuccess: () => {
         toast.success(`Grupo ${nuevoEstado === 'activo' ? 'activado' : 'desactivado'} exitosamente`);
@@ -122,12 +123,14 @@ export default function Index({ grupos: gruposData, filters }: IndexProps) {
             </p>
           </div>
 
-          <Link href={create().url}>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nuevo Grupo
-            </Button>
-          </Link>
+          {can('create grupos') && (
+            <Link href={create().url}>
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Nuevo Grupo
+              </Button>
+            </Link>
+          )}
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -204,7 +207,7 @@ export default function Index({ grupos: gruposData, filters }: IndexProps) {
                 <Filter className="h-4 w-4" />
                 Filtrar
               </Button>
-              
+
               {(search || selectedEstado) && (
                 <Button
                   type="button"
@@ -264,20 +267,24 @@ export default function Index({ grupos: gruposData, filters }: IndexProps) {
                         {new Date(grupo.created_at).toLocaleDateString('es-BO')}
                       </TableCell>
                       <TableCell className="space-x-2 flex justify-center">
-                        <Link href={edit(grupo.idGrupo).url}>
-                          <Button variant="outline" size="sm" className="flex items-center gap-2">
-                            <Edit className="h-3 w-3" />
-                            Editar
+                        {can('edit grupos') && (
+                          <Link href={edit(grupo.idGrupo).url}>
+                            <Button variant="outline" size="sm" className="flex items-center gap-2">
+                              <Edit className="h-3 w-3" />
+                              Editar
+                            </Button>
+                          </Link>
+                        )}
+                        {can('edit grupos') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => changeStatusHandler(grupo)}
+                            className={grupo.estado === 'activo' ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-green-600 border-green-200 hover:bg-green-50'}
+                          >
+                            {grupo.estado === 'activo' ? 'Desactivar' : 'Activar'}
                           </Button>
-                        </Link>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => changeStatusHandler(grupo)}
-                          className={grupo.estado === 'activo' ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-green-600 border-green-200 hover:bg-green-50'}
-                        >
-                          {grupo.estado === 'activo' ? 'Desactivar' : 'Activar'}
-                        </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

@@ -9,6 +9,7 @@ import { IndexProps } from './types';
 import { PeriodoStats } from './components/PeriodoStats';
 import { PeriodoFilters } from './components/PeriodoFilters';
 import { PeriodoTable } from './components/PeriodoTable';
+import { can } from '@/lib/can';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -30,7 +31,7 @@ export default function Index({ periodos: periodosData, filters }: IndexProps) {
     const params = new URLSearchParams();
     if (search) params.append('search', search);
     if (selectedEstado) params.append('estado', selectedEstado);
-    
+
     router.get(periodosAcademicos.index().url + `?${params.toString()}`);
   };
 
@@ -52,13 +53,16 @@ export default function Index({ periodos: periodosData, filters }: IndexProps) {
               Administra los períodos académicos del sistema
             </p>
           </div>
-
-          <Link href={periodosAcademicos.create().url}>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nuevo Período
-            </Button>
-          </Link>
+          {
+            can('create periodos') && (
+              <Link href={periodosAcademicos.create().url}>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Nuevo Período
+                </Button>
+              </Link>
+            )
+          }
         </div>
 
         <PeriodoStats periodos={periodosData} />

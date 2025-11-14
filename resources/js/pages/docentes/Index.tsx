@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { index, create, edit, changeStatus, show } from '@/routes/docentes';
+import { can } from '@/lib/can';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -144,12 +145,14 @@ export default function Index({ docentes: docentesData, filters }: IndexProps) {
             </p>
           </div>
 
-          <Link href={create().url}>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nuevo Docente
-            </Button>
-          </Link>
+          {can('create docentes') && (
+            <Link href={create().url}>
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Nuevo Docente
+              </Button>
+            </Link>
+          )}
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -335,20 +338,24 @@ export default function Index({ docentes: docentesData, filters }: IndexProps) {
                             Ver
                           </Button>
                         </Link>
-                        <Link href={edit(docente.idDocente).url}>
-                          <Button variant="outline" size="sm" className="flex items-center gap-2">
-                            <Edit className="h-3 w-3" />
-                            Editar
+                        {can('edit docentes') && (
+                          <Link href={edit(docente.idDocente).url}>
+                            <Button variant="outline" size="sm" className="flex items-center gap-2">
+                              <Edit className="h-3 w-3" />
+                              Editar
+                            </Button>
+                          </Link>
+                        )}
+                        {can('edit docentes') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => changeStatusHandler(docente)}
+                            className={docente.estado === 'activo' ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-green-600 border-green-200 hover:bg-green-50'}
+                          >
+                            {docente.estado === 'activo' ? 'Desactivar' : 'Activar'}
                           </Button>
-                        </Link>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => changeStatusHandler(docente)}
-                          className={docente.estado === 'activo' ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-green-600 border-green-200 hover:bg-green-50'}
-                        >
-                          {docente.estado === 'activo' ? 'Desactivar' : 'Activar'}
-                        </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

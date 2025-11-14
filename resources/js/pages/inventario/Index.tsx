@@ -44,6 +44,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import inventario from '@/routes/inventario';
+import { can } from '@/lib/can';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -173,18 +174,22 @@ export default function Index({ inventario: inventarioData, filters }: IndexProp
           </div>
 
           <div className="flex gap-2">
-            <Link href={inventario.movimientos.index().url}>
-              <Button variant="outline" className="flex items-center gap-2">
-                <History className="h-4 w-4" />
-                Movimientos
-              </Button>
-            </Link>
-            <Link href={inventario.create().url}>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Nuevo Item
-              </Button>
-            </Link>
+            {can('view movimientos') && (
+              <Link href={inventario.movimientos.index().url}>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <History className="h-4 w-4" />
+                  Movimientos
+                </Button>
+              </Link>
+            )}
+            {can('create inventario') && (
+              <Link href={inventario.create().url}>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Nuevo Item
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
