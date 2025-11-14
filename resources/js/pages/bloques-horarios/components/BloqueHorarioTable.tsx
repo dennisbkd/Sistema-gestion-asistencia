@@ -1,3 +1,4 @@
+// components/BloqueHorarioTable.tsx
 import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,30 +30,68 @@ const diasSemana = [
 ];
 
 export default function BloqueHorarioTable({ bloques, tieneFiltros }: BloqueHorarioTableProps) {
-  const getTurnoBadge = (turno: string) => {
+  // ✅ CORREGIDO: Función segura para getTurnoBadge
+  const getTurnoBadge = (turno: string | null | undefined) => {
+    // Manejar valores null/undefined/vacíos
+    if (!turno) {
+      return (
+        <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">
+          No definido
+        </Badge>
+      );
+    }
+
     const colors = {
       mañana: 'bg-yellow-100 text-yellow-800 border-yellow-200',
       tarde: 'bg-orange-100 text-orange-800 border-orange-200',
       noche: 'bg-blue-100 text-blue-800 border-blue-200',
     } as const;
 
+    // ✅ CORREGIDO: Usar optional chaining y fallback
+    const turnoCapitalizado = turno?.charAt(0)?.toUpperCase() + turno?.slice(1) || 'No definido';
+
     return (
-      <Badge variant="outline" className={colors[turno as keyof typeof colors]}>
-        {turno.charAt(0).toUpperCase() + turno.slice(1)}
+      <Badge
+        variant="outline"
+        className={colors[turno as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-200'}
+      >
+        {turnoCapitalizado}
       </Badge>
     );
   };
 
-  const getNombreDia = (diaSemana: number) => {
+  // ✅ CORREGIDO: Función segura para getNombreDia
+  const getNombreDia = (diaSemana: number | null | undefined) => {
+    if (!diaSemana) return 'No definido';
     return diasSemana.find(dia => dia.id === diaSemana)?.nombre || 'Desconocido';
   };
 
-  const formatFecha = (fecha: string) => {
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+  // ✅ CORREGIDO: Función segura para formatFecha
+  const formatFecha = (fecha: string | null | undefined) => {
+    if (!fecha) return '-';
+
+    try {
+      return new Date(fecha).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return '-';
+    }
+  };
+
+  // ✅ CORREGIDO: Función segura para formatHora
+  const formatHora = (hora: string | null | undefined) => {
+    if (!hora) return '-';
+
+    try {
+      // Extraer solo la parte de la hora si viene en formato completo
+      const match = hora.match(/(\d{2}:\d{2})/);
+      return match ? match[1] : hora;
+    } catch (error) {
+      return '-';
+    }
   };
 
   return (
@@ -71,8 +110,8 @@ export default function BloqueHorarioTable({ bloques, tieneFiltros }: BloqueHora
         {bloques.length === 0 ? (
           <TableRow>
             <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-              {tieneFiltros 
-                ? 'No hay bloques horarios que coincidan con los filtros.' 
+              {tieneFiltros
+                ? 'No hay bloques horarios que coincidan con los filtros.'
                 : 'No hay bloques horarios registrados.'
               }
             </TableCell>
@@ -83,49 +122,52 @@ export default function BloqueHorarioTable({ bloques, tieneFiltros }: BloqueHora
               <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
+                  {/* ✅ CORREGIDO: Usar función segura */}
                   {getNombreDia(bloque.diaSemana)}
                 </div>
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  {/* ✅ CORREGIDO: Usar horaInicio y horaFin en lugar de horarioFormateado */}
-                  {bloque.horaInicio} - {bloque.horaFin}
+                  {/* ✅ CORREGIDO: Usar funciones seguras para horas */}
+                  {formatHora(bloque.horaInicio)} - {formatHora(bloque.horaFin)}
                 </div>
               </TableCell>
-              <TableCell>{getTurnoBadge(bloque.turno)}</TableCell>
+              <TableCell>
+                {/* ✅ CORREGIDO: Usar función segura que maneja null/undefined */}
+                {getTurnoBadge(bloque.turno)}
+              </TableCell>
               <TableCell>
                 <Badge variant="outline">
-                  {bloque.hoarios_asignacion_count || 0} asignaciones
+                  {/* ✅ CORREGIDO: Usar el nombre correcto de la propiedad */}
+                  {bloque.horarios_asignacion_count || 0} asignaciones
                 </Badge>
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
-                {bloque.created_at ? formatFecha(bloque.created_at) : '-'}
+                {/* ✅ CORREGIDO: Usar función segura */}
+                {formatFecha(bloque.created_at)}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  {/* Ver detalle */}
                   <Button variant="outline" size="sm" asChild>
                     <Link href={bloquesHorarios.detalle(bloque.idBloque).url}>
                       <Eye className="h-4 w-4" />
                     </Link>
                   </Button>
-                  
-                  {/* Editar */}
+
                   <Button variant="outline" size="sm" asChild>
                     <Link href={bloquesHorarios.edit(bloque.idBloque).url}>
                       <Edit className="h-4 w-4" />
                     </Link>
                   </Button>
-                  
-                  {/* Eliminar */}
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+
+                  <Button
+                    variant="outline"
+                    size="sm"
                     asChild
                     className="text-red-600 hover:text-red-900 hover:bg-red-50"
                   >
-                    <Link 
+                    <Link
                       href={bloquesHorarios.destroy(bloque.idBloque).url}
                       method="delete"
                       as="button"

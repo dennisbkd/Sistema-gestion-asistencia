@@ -38,28 +38,49 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
   const [horarios, setHorarios] = useState<HorarioForm[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const getNombreDia = (diaSemana: number) => {
+  // ✅ CORREGIDO: Función segura para getNombreDia
+  const getNombreDia = (diaSemana: number | null | undefined) => {
     const dias = ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+    if (!diaSemana || diaSemana < 1 || diaSemana > 7) {
+      return "No definido";
+    }
     return dias[diaSemana] || "No definido";
   };
 
-  const formatHora = (horaString: string) => {
+  // ✅ CORREGIDO: Función segura para formatHora
+  const formatHora = (horaString: string | null | undefined) => {
     if (!horaString) return '-';
-    const match = horaString.match(/(\d{2}:\d{2})/);
-    return match ? match[1] : horaString;
+
+    try {
+      const match = horaString.match(/(\d{2}:\d{2})/);
+      return match ? match[1] : horaString;
+    } catch (error) {
+      return '-';
+    }
   };
 
-  const getTurnoBadge = (turno: string) => {
+  const getTurnoBadge = (turno: string | null | undefined) => {
+    // Manejar valores null/undefined/vacíos
+    if (!turno) {
+      return (
+        <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">
+          No definido
+        </Badge>
+      );
+    }
+
     const colors = {
       mañana: 'bg-yellow-100 text-yellow-800 border-yellow-200',
       tarde: 'bg-orange-100 text-orange-800 border-orange-200',
       noche: 'bg-blue-100 text-blue-800 border-blue-200',
     } as const;
 
+    // ✅ CORREGIDO: Usar optional chaining y fallback
+    const turnoCapitalizado = turno?.charAt(0)?.toUpperCase() + turno?.slice(1) || 'No definido';
+
     return (
       <Badge variant="outline" className={colors[turno as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-200'}>
-        {turno.charAt(0).toUpperCase() + turno.slice(1)}
+        {turnoCapitalizado}
       </Badge>
     );
   };
@@ -117,6 +138,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
     const docente = docentes.find(d => d.idDocente.toString() === formData.idDocente);
     return docente ? docente.usuario.name : 'Docente';
   };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
