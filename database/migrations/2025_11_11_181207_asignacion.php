@@ -21,9 +21,6 @@ return new class extends Migration
             $table->enum('estado', ['activo', 'finalizado', 'cancelado'])->default('activo');
             $table->integer('inscritos')->default(0);
             $table->timestamps();
-
-            // Evitar duplicados de la misma materia-grupo en el mismo periodo
-            $table->unique(['idPeriodo', 'idMateria', 'idGrupo']);
             
             // Índices para mejor performance
             $table->index(['idDocente', 'estado']);

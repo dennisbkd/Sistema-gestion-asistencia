@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Plus, Trash2, Calendar, Clock, Building } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Calendar, Clock, Building, AlertCircle } from 'lucide-react';
 import { CreateAsignacionProps } from './types/asignaciones';
 import asignaciones from '@/routes/asignaciones';
+import { toast } from 'sonner';
 
 interface HorarioForm {
   idBloque: number;
@@ -36,6 +37,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
 
   const [horarios, setHorarios] = useState<HorarioForm[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getNombreDia = (diaSemana: number) => {
     const dias = ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
@@ -62,16 +64,16 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
     );
   };
 
-    const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ 
-        ...prev, 
-        [field]: field === 'inscritos' ? parseInt(value): value 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: field === 'inscritos' ? parseInt(value) || 0 : value
     }));
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[field]) {
-        setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors(prev => ({ ...prev, [field]: '' }));
     }
-    };
+  };
 
   const handleAddHorario = () => {
     setHorarios(prev => [...prev, { idBloque: 0, idAula: 0 }]);
@@ -82,7 +84,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
   };
 
   const handleHorarioChange = (index: number, field: keyof HorarioForm, value: string) => {
-    setHorarios(prev => prev.map((horario, i) => 
+    setHorarios(prev => prev.map((horario, i) =>
       i === index ? { ...horario, [field]: parseInt(value) || 0 } : horario
     ));
   };
@@ -106,10 +108,24 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
     return Object.keys(newErrors).length === 0;
   };
 
+  const getMateriaNombre = () => {
+    const materia = materias.find(m => m.idMateria.toString() === formData.idMateria);
+    return materia ? `${materia.sigla} - ${materia.nombre}` : 'Asignación';
+  };
+
+  const getDocenteNombre = () => {
+    const docente = docentes.find(d => d.idDocente.toString() === formData.idDocente);
+    return docente ? docente.usuario.name : 'Docente';
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
+      // Mostrar toast de error de validación
+      toast.error('Por favor complete todos los campos requeridos', {
+        description: 'Revise los campos marcados en rojo'
+      });
       return;
     }
 
@@ -126,23 +142,47 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
       }))
     };
 
-    router.post(asignaciones.store().url, submitData, {
-    onSuccess: () => {
-        // Resetear completamente el formulario después de éxito
-        setFormData({
-        idPeriodo: '',
-        idMateria: '',
-        idDocente: '',
-        idGrupo: '',
-        modalidad: 'presencial',
-        inscritos: '',
-        });
-        setHorarios([]);
-        setErrors({});
-    },
-    onError: (errors) => {
-        setErrors(errors as Record<string, string>);
-    }
+    setIsSubmitting(true);
+
+    const createPromise = new Promise((resolve, reject) => {
+      router.post(asignaciones.store().url, submitData, {
+        onSuccess: () => {
+          resolve('success');
+          // Resetear formulario después de éxito
+          setFormData({
+            idPeriodo: '',
+            idMateria: '',
+            idDocente: '',
+            idGrupo: '',
+            modalidad: 'presencial',
+            inscritos: '',
+          });
+          setHorarios([]);
+          setErrors({});
+        },
+        onError: (errors) => {
+          // Manejar errores específicos del backend
+          if (errors.error) {
+            reject(new Error(errors.error));
+          } else {
+            const errorMessages = Object.values(errors).join(', ');
+            reject(new Error(errorMessages || 'Error al crear la asignación'));
+          }
+        },
+        onFinish: () => {
+          setIsSubmitting(false);
+        }
+      });
+    });
+
+    toast.promise(createPromise, {
+      loading: 'Creando asignación...',
+      success: () => {
+        return `Asignación "${getMateriaNombre()}" creada exitosamente para ${getDocenteNombre()}`;
+      },
+      error: (error) => {
+        return `${error.message}`;
+      },
     });
   };
 
@@ -168,10 +208,11 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
             </p>
           </div>
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => window.history.back()}
             className="flex items-center gap-2"
+            disabled={isSubmitting}
           >
             <ArrowLeft className="h-4 w-4" />
             Volver
@@ -195,6 +236,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                   <Select
                     value={formData.idPeriodo}
                     onValueChange={(value) => handleInputChange('idPeriodo', value)}
+                    disabled={isSubmitting}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione un período" />
@@ -208,7 +250,10 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                     </SelectContent>
                   </Select>
                   {errors.idPeriodo && (
-                    <p className="text-sm text-red-600">{errors.idPeriodo}</p>
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.idPeriodo}
+                    </p>
                   )}
                 </div>
 
@@ -218,6 +263,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                   <Select
                     value={formData.idMateria}
                     onValueChange={(value) => handleInputChange('idMateria', value)}
+                    disabled={isSubmitting}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione una materia" />
@@ -231,7 +277,10 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                     </SelectContent>
                   </Select>
                   {errors.idMateria && (
-                    <p className="text-sm text-red-600">{errors.idMateria}</p>
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.idMateria}
+                    </p>
                   )}
                 </div>
 
@@ -241,6 +290,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                   <Select
                     value={formData.idDocente}
                     onValueChange={(value) => handleInputChange('idDocente', value)}
+                    disabled={isSubmitting}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione un docente" />
@@ -254,7 +304,10 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                     </SelectContent>
                   </Select>
                   {errors.idDocente && (
-                    <p className="text-sm text-red-600">{errors.idDocente}</p>
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.idDocente}
+                    </p>
                   )}
                 </div>
 
@@ -264,6 +317,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                   <Select
                     value={formData.idGrupo}
                     onValueChange={(value) => handleInputChange('idGrupo', value)}
+                    disabled={isSubmitting}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione un grupo" />
@@ -277,7 +331,10 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                     </SelectContent>
                   </Select>
                   {errors.idGrupo && (
-                    <p className="text-sm text-red-600">{errors.idGrupo}</p>
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.idGrupo}
+                    </p>
                   )}
                 </div>
 
@@ -287,6 +344,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                   <Select
                     value={formData.modalidad}
                     onValueChange={(value) => handleInputChange('modalidad', value)}
+                    disabled={isSubmitting}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione modalidad" />
@@ -309,6 +367,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                     value={formData.inscritos}
                     onChange={(e) => handleInputChange('inscritos', e.target.value)}
                     placeholder=""
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -323,7 +382,10 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                 Agregue los horarios y aulas para esta asignación
               </CardDescription>
               {errors.horarios && (
-                <p className="text-sm text-red-600">{errors.horarios}</p>
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.horarios}
+                </p>
               )}
             </CardHeader>
             <CardContent>
@@ -343,6 +405,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                           size="sm"
                           onClick={() => handleRemoveHorario(index)}
                           className="text-red-600 hover:text-red-700"
+                          disabled={isSubmitting}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -355,6 +418,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                           <Select
                             value={horario.idBloque.toString()}
                             onValueChange={(value) => handleHorarioChange(index, 'idBloque', value)}
+                            disabled={isSubmitting}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Seleccione un bloque" />
@@ -374,7 +438,10 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                             </SelectContent>
                           </Select>
                           {errors[`horario_${index}_bloque`] && (
-                            <p className="text-sm text-red-600">{errors[`horario_${index}_bloque`]}</p>
+                            <p className="text-sm text-red-600 flex items-center gap-1">
+                              <AlertCircle className="h-3 w-3" />
+                              {errors[`horario_${index}_bloque`]}
+                            </p>
                           )}
                         </div>
 
@@ -384,6 +451,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                           <Select
                             value={horario.idAula.toString()}
                             onValueChange={(value) => handleHorarioChange(index, 'idAula', value)}
+                            disabled={isSubmitting}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Seleccione un aula" />
@@ -404,7 +472,10 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                             </SelectContent>
                           </Select>
                           {errors[`horario_${index}_aula`] && (
-                            <p className="text-sm text-red-600">{errors[`horario_${index}_aula`]}</p>
+                            <p className="text-sm text-red-600 flex items-center gap-1">
+                              <AlertCircle className="h-3 w-3" />
+                              {errors[`horario_${index}_aula`]}
+                            </p>
                           )}
                         </div>
                       </div>
@@ -445,6 +516,7 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
                   variant="outline"
                   onClick={handleAddHorario}
                   className="flex items-center gap-2"
+                  disabled={isSubmitting}
                 >
                   <Plus className="h-4 w-4" />
                   Agregar Horario
@@ -456,12 +528,12 @@ export default function Create({ periodos, materias, docentes, grupos, bloques, 
           {/* Botones de acción */}
           <div className="flex gap-4 justify-end">
             <Link href={asignaciones.index().url}>
-              <Button type="button" variant="outline">
+              <Button type="button" variant="outline" disabled={isSubmitting}>
                 Cancelar
               </Button>
             </Link>
-            <Button type="submit">
-              Crear Asignación
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Creando...' : 'Crear Asignación'}
             </Button>
           </div>
         </form>
