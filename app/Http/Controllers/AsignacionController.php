@@ -167,51 +167,50 @@ class AsignacionController extends Controller
         }
     }
 
-public function index(Request $request)
-{
-    $query = Asignacion::with([
-        'periodo',
-        'materia',
-        'docente.usuario',
-        'grupo',
-        'horarios.bloque',
-        'horarios.aula'
-    ]);
+    public function index(Request $request)
+    {
+        $query = Asignacion::with([
+            'periodo',
+            'materia',
+            'docente.usuario',
+            'grupo',
+            'horarios.bloque',
+            'horarios.aula'
+        ]);
 
-    if ($request->has('search') && $request->search) {
-        $search = $request->search;
-        $query->where(function($q) use ($search) {
-            $q->whereHas('docente.usuario', function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
-            })
-            ->orWhereHas('materia', function($q) use ($search) {
-                $q->where('sigla', 'like', "%{$search}%")
-                  ->orWhere('nombre', 'like', "%{$search}%");
-            })
-            ->orWhereHas('grupo', function($q) use ($search) {
-                $q->where('codigoGrupo', 'like', "%{$search}%");
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('docente.usuario', function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                })
+                ->orWhereHas('materia', function($q) use ($search) {
+                    $q->where('sigla', 'like', "%{$search}%")
+                      ->orWhere('nombre', 'like', "%{$search}%");
+                })
+                ->orWhereHas('grupo', function($q) use ($search) {
+                    $q->where('codigoGrupo', 'like', "%{$search}%");
+                });
             });
-        });
+        }
+
+        if ($request->has('estado') && $request->estado && $request->estado !== 'all') {
+            $query->where('estado', $request->estado);
+        }
+
+        if ($request->has('periodo') && $request->periodo && $request->periodo !== 'all') {
+            $query->where('idPeriodo', $request->periodo);
+        }
+
+        $asignaciones = $query->get();
+        $periodos = PeriodoAcademico::all();
+
+        return Inertia::render('asignaciones/Index', [
+            'asignaciones' => $asignaciones,
+            'periodos' => $periodos,
+            'filters' => $request->only(['search', 'estado', 'periodo'])
+        ]);
     }
-
-    if ($request->has('estado') && $request->estado && $request->estado !== 'all') {
-        $query->where('estado', $request->estado);
-    }
-
-    if ($request->has('periodo') && $request->periodo && $request->periodo !== 'all') {
-        $query->where('idPeriodo', $request->periodo);
-    }
-
-    $asignaciones = $query->get(); // ← Esto podría ser el problema
-    $periodos = PeriodoAcademico::all();
-
-
-    return Inertia::render('asignaciones/Index', [
-        'asignaciones' => $asignaciones,
-        'periodos' => $periodos,
-        'filters' => $request->only(['search', 'estado', 'periodo'])
-    ]);
-}
 
     public function create()
     {
@@ -227,132 +226,96 @@ public function index(Request $request)
         ]);
     }
 
-public function store(StoreAsignacionRequest $request)
-{
-    try {
-        $data = $request->validated();
-
-        Log::info('📥 INICIO - Datos recibidos en store:', $request->all());
-        Log::info('📊 Datos validados:', $data);
-
-        // Verificar capacidad del aula para cada horario
-        foreach ($data['horarios'] as $horario) {
-            $capacidadCheck = $this->verificarCapacidadAula($horario['idAula'], $data['inscritos'] ?? 0);
-            if ($capacidadCheck['error']) {
-                Log::warning('⚠️ Error de capacidad:', $capacidadCheck);
-                return back()
-                    ->withInput()
-                    ->with('error', $capacidadCheck['mensaje']);
-            }
-        }
-
-        // Verificar horas del docente
-        $horasCheck = $this->verificarHorasDocente(
-            $data['idDocente'], 
-            $data['idPeriodo'],
-            array_column($data['horarios'], 'idBloque')
-        );
-        
-        if ($horasCheck['error']) {
-            Log::warning('⚠️ Error de horas:', $horasCheck);
-            return back()
-                ->withInput()
-                ->with('error', $horasCheck['mensaje']);
-        }
-
-        // Verificar conflictos para cada horario
-        $todosLosConflictos = [];
-        foreach ($data['horarios'] as $horario) {
-            $conflictos = $this->verificarConflictos(
-                $data['idDocente'],
-                $data['idGrupo'],
-                $horario['idAula'],
-                $horario['idBloque']
-            );
-
-            if (!empty($conflictos)) {
-                $todosLosConflictos = array_merge($todosLosConflictos, $conflictos);
-            }
-        }
-
-        // Si hay conflictos, mostrar mensaje de error
-        if (!empty($todosLosConflictos)) {
-            Log::warning('⚠️ Conflictos detectados:', $todosLosConflictos);
-            
-            $mensajeError = "Se encontraron los siguientes conflictos:\n";
-            foreach ($todosLosConflictos as $conflicto) {
-                $materia = $conflicto['asignacion']->materia->nombre ?? 'Desconocida';
-                $grupo = $conflicto['asignacion']->grupo->codigoGrupo ?? 'Desconocido';
-                $mensajeError .= "• {$conflicto['mensaje']} (Materia: {$materia}, Grupo: {$grupo})\n";
-            }
-            
-            return back()
-                ->withInput()
-                ->with('error', $mensajeError);
-        }
-
-        Log::info('✅ Todas las validaciones pasaron, iniciando transacción...');
-
-        // Iniciar transacción
-        DB::beginTransaction();
-        
+    public function store(StoreAsignacionRequest $request)
+    {
         try {
-            // Crear asignación
-            $asignacion = Asignacion::create([
-                'idPeriodo' => $data['idPeriodo'],
-                'idMateria' => $data['idMateria'],
-                'idDocente' => $data['idDocente'],
-                'idGrupo' => $data['idGrupo'],
-                'modalidad' => $data['modalidad'] ?? 'presencial',
-                'estado' => 'activo',
-                'inscritos' => $data['inscritos'] ?? 0
-            ]);
+            $data = $request->validated();
 
-            Log::info('✅ Asignación creada con ID: ' . $asignacion->idAsignacion, $asignacion->toArray());
+            Log::info('📥 Datos recibidos en store:', $request->all());
+            Log::info('📊 Datos validados en store:', $data);
 
-            // Crear horarios
-            $horariosCreados = [];
+            // Verificar capacidad del aula para cada horario
             foreach ($data['horarios'] as $horario) {
-                $horarioCreado = HorarioAsignacion::create([
-                    'idAsignacion' => $asignacion->idAsignacion,
-                    'idBloque' => $horario['idBloque'],
-                    'idAula' => $horario['idAula'],
-                    'estado' => 'activo'
-                ]);
-                $horariosCreados[] = $horarioCreado->idHorarioAsignacion;
+                $capacidadCheck = $this->verificarCapacidadAula($horario['idAula'], $data['inscritos'] ?? 0);
+                if ($capacidadCheck['error']) {
+                    return back()->with('error', $capacidadCheck['mensaje']);
+                }
             }
 
-            Log::info('✅ Horarios creados:', $horariosCreados);
+            // Verificar horas del docente
+            $horasCheck = $this->verificarHorasDocente(
+                $data['idDocente'], 
+                $data['idPeriodo'],
+                array_column($data['horarios'], 'idBloque')
+            );
+            if ($horasCheck['error']) {
+                return back()->with('error', $horasCheck['mensaje']);
+            }
 
-            // Commit de la transacción
-            DB::commit();
-            
-            Log::info('✅ TRANSACCIÓN COMPLETADA - Asignación ID: ' . $asignacion->idAsignacion);
+            // Verificar conflictos para cada horario
+            $todosLosConflictos = [];
+            foreach ($data['horarios'] as $horario) {
+                $conflictos = $this->verificarConflictos(
+                    $data['idDocente'],
+                    $data['idGrupo'],
+                    $horario['idAula'],
+                    $horario['idBloque']
+                );
 
-            return redirect()
-                ->route('asignaciones.index')
+                if (!empty($conflictos)) {
+                    $todosLosConflictos = array_merge($todosLosConflictos, $conflictos);
+                }
+            }
+
+            // Si hay conflictos, mostrar mensaje de error
+            if (!empty($todosLosConflictos)) {
+                $mensajeError = "Se encontraron los siguientes conflictos:\n";
+                foreach ($todosLosConflictos as $conflicto) {
+                    $materia = $conflicto['asignacion']->materia->nombre ?? 'Desconocida';
+                    $grupo = $conflicto['asignacion']->grupo->codigoGrupo ?? 'Desconocido';
+                    $mensajeError .= "• {$conflicto['mensaje']} (Materia: {$materia}, Grupo: {$grupo})\n";
+                }
+                
+                return back()->with('error', $mensajeError);
+            }
+
+            DB::transaction(function () use ($data) {
+                $asignacion = Asignacion::create([
+                    'idPeriodo' => $data['idPeriodo'],
+                    'idMateria' => $data['idMateria'],
+                    'idDocente' => $data['idDocente'],
+                    'idGrupo' => $data['idGrupo'],
+                    'modalidad' => $data['modalidad'] ?? 'presencial',
+                    'estado' => 'activo',
+                    'inscritos' => $data['inscritos'] ?? 0
+                ]);
+
+                Log::info('✅ Asignación creada:', $asignacion->toArray());
+
+                $horariosData = array_map(function ($horario) use ($asignacion) {
+                    return [
+                        'idAsignacion' => $asignacion->idAsignacion,
+                        'idBloque' => $horario['idBloque'],
+                        'idAula' => $horario['idAula'],
+                        'estado' => 'activo',
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
+                }, $data['horarios']);
+
+                HorarioAsignacion::insert($horariosData);
+            });
+
+            return redirect()->route('asignaciones.index')
                 ->with('success', 'Asignación creada exitosamente');
 
         } catch (\Exception $e) {
-            // Rollback en caso de error
-            DB::rollBack();
+            Log::error('❌ Error al crear asignación: ' . $e->getMessage());
+            Log::error('🔍 Trace:', ['trace' => $e->getTraceAsString()]);
             
-            Log::error('❌ ERROR EN TRANSACCIÓN: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
-            
-            throw $e; // Re-lanzar para que el catch externo lo maneje
+            return back()->with('error', 'Error al crear la asignación. Por favor, intente nuevamente.');
         }
-
-    } catch (\Exception $e) {
-        Log::error('❌ ERROR GENERAL al crear asignación: ' . $e->getMessage());
-        Log::error('Archivo: ' . $e->getFile() . ' Línea: ' . $e->getLine());
-        Log::error('Stack trace: ' . $e->getTraceAsString());
-        
-        return back()
-            ->withInput()
-            ->with('error', 'Error al crear la asignación: ' . $e->getMessage());
     }
-}
 
     public function edit(Asignacion $asignacion)
     {
