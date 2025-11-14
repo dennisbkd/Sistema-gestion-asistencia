@@ -4,7 +4,7 @@ export interface BloqueHorario {
   horaInicio: string;
   horaFin: string;
   turno: string;
-  hoarios_asignacion_count: number;
+  horarios_asignacion_count: number;
   created_at?: string;
   updated_at?: string;
 }
